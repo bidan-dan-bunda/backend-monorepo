@@ -33,7 +33,7 @@ it('should reject registering already registered user', async () => {
       password: 'passwordku_yg_sangat_aman_skl_bruh2469....',
       name: 'Bagas Wahyu Hidayah',
       user_type: 'u',
-      address: 'Pakem, Sleman, DI Yogyakarta',
+      full_address: 'Pakem, Sleman, DI Yogyakarta',
       telephone: '081575259164',
     });
   } catch (err) {

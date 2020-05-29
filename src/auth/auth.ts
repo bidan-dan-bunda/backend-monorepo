@@ -1,10 +1,24 @@
-import { User, UserDefinition } from '../orm/models/user';
+import { User, UserFields, UserDefinition } from '../orm/models/user';
 import Database from '../orm/database';
 import { compare, hash } from './hash';
 
 export interface Credential {
   username: string;
   password: string;
+}
+
+export interface UserSignUpDetail extends Credential {
+  user_type: string;
+  username: string;
+  password: string;
+  name: string;
+  full_address?: string;
+  address_province?: string;
+  address_regency?: string;
+  address_district?: string;
+  address_village?: string;
+  telephone?: string;
+  profile_img?: Buffer;
 }
 
 export enum AuthErrorCodes {
@@ -45,9 +59,9 @@ export async function signin({ username, password }: Credential) {
   return user.toJSON() as User;
 }
 
-function validateUserDetail(userDetail: User) {}
+function validateUserDetail(userDetail: UserSignUpDetail) {}
 
-export async function signup(userDetail: User) {
+export async function signup(userDetail: UserSignUpDetail) {
   const user = await userExists(userDetail.username);
   if (user) {
     throw new AuthError(
@@ -59,10 +73,10 @@ export async function signup(userDetail: User) {
   validateUserDetail(userDetail);
   userDetail.password = await hash(userDetail.password);
 
-  return (await database.model.create(userDetail)).toJSON() as User;
+  return (await database.model.create(userDetail)).toJSON() as UserFields;
 }
 
-export async function signout(user: User) {}
+export async function signout(user: UserSignUpDetail) {}
 
 // testing purpose
 export async function truncate() {

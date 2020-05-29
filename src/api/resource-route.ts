@@ -19,35 +19,35 @@ const mapActionsToRoutesDefaults: { [action: string]: string } = {
 };
 
 export interface LoadHandler {
-  (paging: ResourcePage, ...params: any): Promise<any> | any;
+  (req: Request, page: ResourcePage, ...params: any): Promise<any> | any;
 }
 
 export interface CreateHandler {
-  (values: any, ...params: any): Promise<any> | any;
+  (req: Request, values: any, ...params: any): Promise<any> | any;
 }
 
 export interface EditHandler {
-  (id: any, values: any, ...params: any): Promise<any> | any;
+  (req: Request, id: any, values: any, ...params: any): Promise<any> | any;
 }
 
 export interface DestroyHandler {
-  (id: any, ...params: any): Promise<any> | any;
+  (req: Request, id: any, ...params: any): Promise<any> | any;
 }
 
 interface Route {
   route: string;
   method?: string;
+  handler?: RequestHandler;
   load?: LoadHandler;
   create?: CreateHandler;
   edit?: EditHandler;
   destroy?: DestroyHandler;
-  handler?: RequestHandler;
 }
 
 function createResourceLoadHandler(load: LoadHandler) {
   return async function (req: Request, res: Response) {
     const { offset, limit } = (req as any).data;
-    const ret = load({ offset, limit }, req.params);
+    const ret = load(req, { offset, limit }, req.params);
     if (isPromise(ret)) {
       return res.json(await ret);
     }

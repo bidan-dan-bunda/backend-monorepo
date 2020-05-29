@@ -1,8 +1,8 @@
 import express from 'express';
-import authRouter from './auth.v1';
-import * as locationRouter from './resources/v1/location';
-import { createResourceRouter } from './resource-route';
-import { paging } from './middlewares';
+import authRouter from './auth';
+import * as locationRouter from './resources/location';
+import { createResourceRouter } from '../resource-route';
+import { paging } from '../middlewares';
 
 const apiRouter = express.Router();
 apiRouter.use('/auth', authRouter);

@@ -6,7 +6,7 @@ import sessionConfig from './auth/session';
 import Database from './orm/database';
 Database.initializeModels();
 
-import apiRouter from './api/index';
+import apiRouter from './api/v1/index';
 
 const app = express();
 
@@ -21,6 +21,6 @@ app.use(helmet());
 app.use(express.json({ limit: '5MB' }));
 app.use(sessionConfig);
 
-app.use('/api', apiRouter);
+app.use('/api/v1', apiRouter);
 
 export default app;

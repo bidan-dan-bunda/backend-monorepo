@@ -1,6 +1,6 @@
 import express from 'express';
-import { User } from './../orm/models/user';
-import { signin, signup, signout, truncate } from '../auth/auth';
+import { UserFields } from '../../orm/models/user';
+import { signin, signup, signout, truncate } from '../../auth/auth';
 
 const router = express.Router();
 
@@ -40,7 +40,7 @@ router.post('/signup', async (req, res) => {
   }
 
   try {
-    const ret = await signup(req.body as User);
+    const ret = await signup(req.body as UserFields);
 
     if (req.session) {
       req.session.isLoggedIn = true;

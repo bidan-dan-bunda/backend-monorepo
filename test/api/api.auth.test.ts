@@ -4,7 +4,7 @@ import axios, { AxiosResponse, AxiosError } from 'axios';
 const url = process.env.URL || 'http://localhost:3000';
 
 function getAuthUrl(route: string): string {
-  return `${url}/api/auth/${route}`;
+  return `${url}/api/v1/auth/${route}`;
 }
 
 jest.setTimeout(1000000);
