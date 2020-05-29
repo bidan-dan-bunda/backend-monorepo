@@ -1,0 +1,1 @@
+DB_HOST=localhost DB_NAME=bidandanbunda DB_USER=root DB_PASS=Polkadot69. npm test test/database.test.ts -- --runInBand

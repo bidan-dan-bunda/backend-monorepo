@@ -1,4 +1,12 @@
-import { Sequelize, Model, DataTypes, BuildOptions } from 'sequelize';
+import {
+  Sequelize,
+  Model,
+  BuildOptions,
+  ModelOptions,
+  ModelAttributes,
+} from 'sequelize';
+
+import * as models from './models';
 
 let sequelize: Sequelize | null = null;
 
@@ -30,29 +38,49 @@ export function getSequelizeInstance({
   return sequelize;
 }
 
+export interface ModelDefinition {
+  name: string;
+  attributes: ModelAttributes;
+  options?: ModelOptions;
+  run?: {
+    (s: Sequelize): void;
+  };
+  runAfter?: {
+    (s: Sequelize): void;
+  };
+}
+
 export default class Database<T extends Model> {
   public sequelize: Sequelize;
   public model: typeof Model & {
     new (values?: object, options?: BuildOptions): T;
   };
 
-  constructor(
-    model: {
-      name: string;
-      attributes: any;
-      options?: any;
-    },
-    connection = defaultDatabaseConnection
-  ) {
+  constructor(model: ModelDefinition, connection = defaultDatabaseConnection) {
     this.sequelize = getSequelizeInstance(connection);
 
-    this.model = <any>(
-      (sequelize as Sequelize).define(
-        model.name,
-        model.attributes,
-        model.options
-      )
-    );
+    if (!this.sequelize.models[model.name]) {
+      if (model.run) {
+        model.run(this.sequelize);
+      } else {
+        sequelize?.define(model.name, model.attributes, model.options) as any;
+      }
+      model.runAfter && process.nextTick(model.runAfter.bind(model));
+    }
+    this.model = sequelize?.models[model.name] as any;
+  }
+
+  static initializeModels(connection = defaultDatabaseConnection) {
+    const sequelize = getSequelizeInstance(connection);
+    for (const name in models) {
+      const model = (models as { [name: string]: ModelDefinition })[name];
+      if (model.run) {
+        model.run(sequelize);
+      } else {
+        sequelize?.define(model.name, model.attributes, model.options) as any;
+      }
+      model.runAfter && process.nextTick(model.runAfter.bind(model, sequelize));
+    }
   }
 
   async load(options?: any) {

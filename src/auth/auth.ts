@@ -1,4 +1,4 @@
-import User, { UserModel } from '../orm/models/user';
+import { User, UserDefinition } from '../orm/models/user';
 import Database from '../orm/database';
 import { compare, hash } from './hash';
 
@@ -21,7 +21,7 @@ export class AuthError extends Error {
   }
 }
 
-const database = new Database<UserModel>(User, undefined);
+const database = new Database<User>(UserDefinition, undefined);
 
 async function userExists(username: string) {
   return await database.model.findOne({ where: { username } });
@@ -42,12 +42,12 @@ export async function signin({ username, password }: Credential) {
       AuthErrorCodes.USER_PASSWORD_INVALID_COMBINATION
     );
   }
-  return user.toJSON() as UserModel;
+  return user.toJSON() as User;
 }
 
-function validateUserDetail(userDetail: UserModel) {}
+function validateUserDetail(userDetail: User) {}
 
-export async function signup(userDetail: UserModel) {
+export async function signup(userDetail: User) {
   const user = await userExists(userDetail.username);
   if (user) {
     throw new AuthError(
@@ -59,10 +59,10 @@ export async function signup(userDetail: UserModel) {
   validateUserDetail(userDetail);
   userDetail.password = await hash(userDetail.password);
 
-  return (await database.model.create(userDetail)).toJSON() as UserModel;
+  return (await database.model.create(userDetail)).toJSON() as User;
 }
 
-export async function signout(user: UserModel) {}
+export async function signout(user: User) {}
 
 // testing purpose
 export async function truncate() {

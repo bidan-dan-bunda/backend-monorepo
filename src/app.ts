@@ -2,6 +2,10 @@ import express from 'express';
 import helmet from 'helmet';
 import logger from 'morgan';
 import sessionConfig from './auth/session';
+
+import Database from './orm/database';
+Database.initializeModels();
+
 import apiRouter from './api/index';
 
 const app = express();

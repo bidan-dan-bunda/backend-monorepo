@@ -1,33 +1,57 @@
-import { DataTypes } from 'sequelize';
-import { Model, BuildOptions } from 'sequelize';
+import { ModelDefinition } from './../database';
+import {
+  Model,
+  HasManyGetAssociationsMixin,
+  Association,
+  DataTypes,
+  Sequelize,
+} from 'sequelize';
+import { District } from './reg-district';
 
-export interface RegencyModel extends Model {
+export interface RegencyFields {
   id: string;
   name: string;
+  province_id: string;
 }
 
-export type RegencyModelStatic = typeof Model & {
-  new (values?: object, options?: BuildOptions): RegencyModel;
-};
+export class Regency extends Model implements RegencyFields {
+  public id!: string;
+  public name!: string;
+  public province_id!: string;
 
-const RegencyModel = {
-  name: 'reg_regency',
+  public getDistricts!: HasManyGetAssociationsMixin<District>;
+
+  public static associations: {
+    districts: Association<Regency, District>;
+  };
+}
+
+export const RegencyDefinition: ModelDefinition = {
+  name: 'Regency',
   attributes: {
     id: {
-      primaryKey: true,
       type: DataTypes.CHAR(4),
-      allowNull: false,
+      primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-    },
-    province_id: {
-      type: DataTypes.CHAR(2),
-    },
+    name: DataTypes.STRING,
+    province_id: DataTypes.CHAR(4),
   },
   options: {
     timestamps: false,
+    tableName: 'reg_regencies',
+  },
+  run(sequelize: Sequelize) {
+    Regency.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
+  },
+  runAfter(sequelize: Sequelize) {
+    Regency.hasMany(District, {
+      sourceKey: 'id',
+      foreignKey: 'regency_id',
+      as: 'districts',
+    });
   },
 };
-
-export default RegencyModel;

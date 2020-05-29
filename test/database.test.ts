@@ -1,7 +1,7 @@
-import User, { UserModel } from '../src/orm/models/user';
+import { User, UserDefinition } from '../src/orm/models/user';
 import Database from '../src/orm/database';
 
-const database = new Database<UserModel>(User, undefined);
+const database = new Database<User>(UserDefinition, undefined);
 
 beforeEach(async () => {
   await database.model.truncate();
@@ -19,4 +19,5 @@ it('should fetch correct user data', async () => {
     telephone: 89121313,
   });
   data = await database.load();
+  expect(data.length).toBe(1);
 });

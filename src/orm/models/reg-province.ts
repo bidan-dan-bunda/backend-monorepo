@@ -1,30 +1,54 @@
-import { DataTypes } from 'sequelize';
-import { Model, BuildOptions } from 'sequelize';
+import { ModelDefinition } from './../database';
+import {
+  Sequelize,
+  Model,
+  HasManyGetAssociationsMixin,
+  Association,
+  DataTypes,
+} from 'sequelize';
+import { Regency } from './reg-regency';
 
-export interface ProvinceModel extends Model {
+export interface ProvinceFields {
   id: string;
   name: string;
 }
 
-export type ProvinceModelStatic = typeof Model & {
-  new (values?: object, options?: BuildOptions): ProvinceModel;
-};
+export class Province extends Model implements ProvinceFields {
+  public id!: string;
+  public name!: string;
 
-const ProvinceModel = {
-  name: 'reg_province',
+  public getRegencies!: HasManyGetAssociationsMixin<Regency>;
+
+  public static associations: {
+    regencies: Association<Province, Regency>;
+  };
+}
+
+export const ProvinceDefinition: ModelDefinition = {
+  name: 'Province',
   attributes: {
     id: {
-      primaryKey: true,
       type: DataTypes.CHAR(2),
-      allowNull: false,
+      primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-    },
+    name: DataTypes.STRING,
   },
   options: {
     timestamps: false,
+    tableName: 'reg_provinces',
+  },
+  run(sequelize: Sequelize) {
+    Province.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
+  },
+  runAfter(sequelize: Sequelize) {
+    Province.hasMany(Regency, {
+      sourceKey: 'id',
+      foreignKey: 'province_id',
+      as: 'regencies',
+    });
   },
 };
-
-export default ProvinceModel;

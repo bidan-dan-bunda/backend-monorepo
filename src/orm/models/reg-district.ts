@@ -1,33 +1,50 @@
-import { DataTypes } from 'sequelize';
-import { Model, BuildOptions } from 'sequelize';
+import { ModelDefinition } from './../database';
+import {
+  Model,
+  HasManyGetAssociationsMixin,
+  Association,
+  DataTypes,
+  Sequelize,
+} from 'sequelize';
+import { Village } from './reg-village';
 
-export interface DistrictModel extends Model {
+export interface DistrictFields {
   id: string;
   name: string;
+  regency_id: string;
 }
 
-export type DistrictModelStatic = typeof Model & {
-  new (values?: object, options?: BuildOptions): DistrictModel;
-};
+export class District extends Model implements DistrictFields {
+  public id!: string;
+  public name!: string;
+  public regency_id!: string;
 
-const DistrictModel = {
-  name: 'reg_district',
+  public getVillages!: HasManyGetAssociationsMixin<Village>;
+
+  public static associations: {
+    villages: Association<District, Village>;
+  };
+}
+
+export const DistrictDefinition: ModelDefinition = {
+  name: 'District',
   attributes: {
     id: {
-      primaryKey: true,
       type: DataTypes.CHAR(7),
-      allowNull: false,
+      primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-    },
-    regency_id: {
-      type: DataTypes.CHAR(4),
-    },
+    name: DataTypes.STRING,
+    regency_id: DataTypes.CHAR(4),
   },
   options: {
     timestamps: false,
+    tableName: 'reg_districts',
+  },
+  run(sequelize: Sequelize) {
+    District.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
   },
 };
-
-export default DistrictModel;

@@ -1,6 +1,6 @@
 import express from 'express';
-import authRouter from './auth';
-import * as locationRouter from './resources/location';
+import authRouter from './auth.v1';
+import * as locationRouter from './resources/v1/location';
 import { createResourceRouter } from './resource-route';
 import { paging } from './middlewares';
 

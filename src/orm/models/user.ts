@@ -1,13 +1,14 @@
+import { ModelDefinition } from './../database';
 import { DataTypes } from 'sequelize';
 import { Model, BuildOptions } from 'sequelize';
 
-export interface UserModel extends Model {
+export interface UserFields {
   id: number;
   user_type: string;
   username: string;
   password: string;
   name: string;
-  address?: string;
+  full_address?: string;
   address_province?: string;
   address_regency?: string;
   address_district?: string;
@@ -16,11 +17,9 @@ export interface UserModel extends Model {
   profile_img?: Buffer;
 }
 
-export type UserModelStatic = typeof Model & {
-  new (values?: object, options?: BuildOptions): UserModel;
-};
+export interface User extends UserFields, Model {}
 
-const UserModel = {
+export const UserDefinition: ModelDefinition = {
   name: 'user',
   attributes: {
     id: {
@@ -41,7 +40,7 @@ const UserModel = {
     name: {
       type: DataTypes.STRING,
     },
-    address: {
+    full_address: {
       type: DataTypes.STRING,
     },
     address_province: {
@@ -70,5 +69,3 @@ const UserModel = {
     timestamps: false,
   },
 };
-
-export default UserModel;

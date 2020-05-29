@@ -1,8 +1,10 @@
-import { ResourcePage } from './middlewares';
 import express, { RequestHandler, Request, Response } from 'express';
+import isPromise from 'is-promise';
+import { ResourcePage } from './middlewares';
 
 const mapActionsToMethods: { [action: string]: string } = {
   index: 'get',
+  show: 'get',
   create: 'post',
   edit: 'put',
   destroy: 'delete',
@@ -10,27 +12,43 @@ const mapActionsToMethods: { [action: string]: string } = {
 
 const mapActionsToRoutesDefaults: { [action: string]: string } = {
   index: '/',
+  show: '/:id',
   create: '/',
   edit: '/:id',
   destroy: '/:id',
 };
 
-export interface Loader {
-  (paging: ResourcePage, ...params: any[]): Promise<any> | any;
+export interface LoadHandler {
+  (paging: ResourcePage, ...params: any): Promise<any> | any;
 }
 
-interface RouteObject {
+export interface CreateHandler {
+  (values: any, ...params: any): Promise<any> | any;
+}
+
+export interface EditHandler {
+  (id: any, values: any, ...params: any): Promise<any> | any;
+}
+
+export interface DestroyHandler {
+  (id: any, ...params: any): Promise<any> | any;
+}
+
+interface Route {
   route: string;
   method?: string;
-  loader?: Function;
+  load?: LoadHandler;
+  create?: CreateHandler;
+  edit?: EditHandler;
+  destroy?: DestroyHandler;
   handler?: RequestHandler;
 }
 
-function createLoaderHandler(loader: Loader) {
+function createResourceLoadHandler(load: LoadHandler) {
   return async function (req: Request, res: Response) {
     const { offset, limit } = (req as any).data;
-    const ret = loader({ offset, limit });
-    if (ret instanceof Promise) {
+    const ret = load({ offset, limit }, req.params);
+    if (isPromise(ret)) {
       return res.json(await ret);
     }
     return res.json(ret);
@@ -38,21 +56,20 @@ function createLoaderHandler(loader: Loader) {
 }
 
 export function createResourceRouter(routes: {
-  [action: string]: RequestHandler | RouteObject;
+  [action: string]: RequestHandler | Route;
 }) {
   const router = express.Router();
   for (const action in routes) {
     const routeObj = routes[action];
-    const method =
-      mapActionsToMethods[action] || (routeObj as RouteObject).method;
+    const method = mapActionsToMethods[action] || (routeObj as Route).method;
     const route =
-      mapActionsToRoutesDefaults[action] || (routeObj as RouteObject).route;
+      mapActionsToRoutesDefaults[action] || (routeObj as Route).route;
     const handler =
       typeof routes[action] == 'function'
         ? routes[action]
-        : (routeObj as RouteObject).loader
-        ? createLoaderHandler((routeObj as RouteObject).loader as Loader)
-        : (routeObj as RouteObject).handler;
+        : (routeObj as Route).load
+        ? createResourceLoadHandler((routeObj as Route).load as LoadHandler)
+        : (routeObj as Route).handler;
     (router as any)[method as string](route, handler);
   }
   return router;

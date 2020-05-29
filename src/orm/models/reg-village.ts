@@ -1,33 +1,36 @@
-import { DataTypes } from 'sequelize';
-import { Model, BuildOptions } from 'sequelize';
+import { ModelDefinition } from './../database';
+import { Model, DataTypes, Sequelize } from 'sequelize';
 
-export interface VillageModel extends Model {
+export interface VillageFields {
   id: string;
   name: string;
+  district_id: string;
 }
 
-export type VillageModelStatic = typeof Model & {
-  new (values?: object, options?: BuildOptions): VillageModel;
-};
+export class Village extends Model implements VillageFields {
+  public id!: string;
+  public name!: string;
+  public district_id!: string;
+}
 
-const VillageModel = {
-  name: 'reg_village',
+export const VillageDefinition: ModelDefinition = {
+  name: 'Village',
   attributes: {
     id: {
-      primaryKey: true,
       type: DataTypes.CHAR(10),
-      allowNull: false,
+      primaryKey: true,
     },
-    name: {
-      type: DataTypes.STRING,
-    },
-    district_id: {
-      type: DataTypes.CHAR(7),
-    },
+    name: DataTypes.STRING,
   },
   options: {
     timestamps: false,
+    tableName: 'reg_villages',
+  },
+  run(sequelize: Sequelize) {
+    Village.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
   },
 };
-
-export default VillageModel;
