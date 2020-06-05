@@ -45,12 +45,12 @@
     "json-schema-faker": "^0.5.0-rcv.24",
     "morgan": "^1.10.0",
     "nodemon": "^2.0.4",
-    "rimraf": "^3.0.2",
     "ts-jest": "^26.0.0",
     "ts-node": "^8.10.1",
     "typescript": "^3.9.2"
   },
   "dependencies": {
+    "rimraf": "^3.0.2",
     "@hapi/joi": "^17.1.1",
     "axios": "^0.19.2",
     "bcrypt": "^4.0.1",
