@@ -47,4 +47,11 @@ export const DistrictDefinition: ModelDefinition = {
       ...this.options,
     });
   },
+  runAfter(sequelize: Sequelize) {
+    District.hasMany(Village, {
+      sourceKey: 'id',
+      foreignKey: 'district_id',
+      as: 'villages',
+    });
+  },
 };

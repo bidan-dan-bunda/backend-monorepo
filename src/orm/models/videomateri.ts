@@ -14,7 +14,7 @@ export interface VideoMateriFields {
   thumbnail?: Buffer;
   week?: number;
   user_bid_id: number;
-  video_id: number;
+  video_id?: number;
 }
 
 export class VideoMateri extends Model implements VideoMateriFields {
@@ -23,12 +23,7 @@ export class VideoMateri extends Model implements VideoMateriFields {
   public thumbnail!: Buffer;
   public week!: number;
   public user_bid_id!: number;
-
-  public getVideo!: HasManyGetAssociationsMixin<Video>;
-
-  public static associations: {
-    videos: Association<VideoMateri, Video>;
-  };
+  public video_id?: number;
 }
 
 export const VideoMateriDefinition: ModelDefinition = {
@@ -49,5 +44,4 @@ export const VideoMateriDefinition: ModelDefinition = {
     timestamps: false,
     tableName: 'videomateri',
   },
-  runAfter(sequelize: Sequelize) {},
 };

@@ -14,7 +14,7 @@ export interface UserFields {
   address_district?: string;
   address_village?: string;
   telephone?: string;
-  profile_img?: Buffer;
+  profile_image?: string;
 }
 
 export interface User extends UserFields, Model {}
@@ -58,8 +58,8 @@ export const UserDefinition: ModelDefinition = {
     telephone: {
       type: DataTypes.STRING,
     },
-    profile_img: {
-      type: DataTypes.BLOB,
+    profile_image: {
+      type: DataTypes.STRING,
     },
     pus_id: {
       type: DataTypes.INTEGER,

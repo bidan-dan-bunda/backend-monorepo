@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.VillageDefinition = exports.DistrictDefinition = exports.ProvinceDefinition = exports.RegencyDefinition = exports.UserDefinition = void 0;
+const reg_province_1 = require("./reg-province");
+Object.defineProperty(exports, "ProvinceDefinition", { enumerable: true, get: function () { return reg_province_1.ProvinceDefinition; } });
+const reg_regency_1 = require("./reg-regency");
+Object.defineProperty(exports, "RegencyDefinition", { enumerable: true, get: function () { return reg_regency_1.RegencyDefinition; } });
+const reg_district_1 = require("./reg-district");
+Object.defineProperty(exports, "DistrictDefinition", { enumerable: true, get: function () { return reg_district_1.DistrictDefinition; } });
+const reg_village_1 = require("./reg-village");
+Object.defineProperty(exports, "VillageDefinition", { enumerable: true, get: function () { return reg_village_1.VillageDefinition; } });
+const user_1 = require("./user");
+Object.defineProperty(exports, "UserDefinition", { enumerable: true, get: function () { return user_1.UserDefinition; } });

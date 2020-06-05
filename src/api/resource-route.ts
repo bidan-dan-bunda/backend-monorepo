@@ -1,6 +1,15 @@
-import express, { RequestHandler, Request, Response } from 'express';
+import { Model } from 'sequelize';
+import { ROOT_PATH } from './../constants';
+import createError from 'http-errors';
+import express, {
+  RequestHandler,
+  Request,
+  Response,
+  NextFunction,
+} from 'express';
 import isPromise from 'is-promise';
-import { ResourcePage } from './middlewares';
+import path from 'path';
+import { upload } from '../fileupload';
 
 const mapActionsToMethods: { [action: string]: string } = {
   index: 'get',
@@ -18,41 +27,163 @@ const mapActionsToRoutesDefaults: { [action: string]: string } = {
   destroy: '/:id',
 };
 
-export interface LoadHandler {
-  (req: Request, page: ResourcePage, ...params: any): Promise<any> | any;
+export interface ResourceHandler {
+  (req: Request, ...params: any): Promise<any> | any;
 }
 
-export interface CreateHandler {
-  (req: Request, values: any, ...params: any): Promise<any> | any;
+export interface UploadCallback {
+  (req: Request, res: any): Promise<any> | any;
 }
 
-export interface EditHandler {
-  (req: Request, id: any, values: any, ...params: any): Promise<any> | any;
+export interface UploadDescription {
+  path?: string;
+  callback?: UploadCallback;
+  httpCode?: number;
+  responseMessage?: string;
 }
 
-export interface DestroyHandler {
-  (req: Request, id: any, ...params: any): Promise<any> | any;
-}
-
-interface Route {
-  route: string;
+export interface RouteDefinition {
+  route?: string;
   method?: string;
   handler?: RequestHandler;
-  load?: LoadHandler;
-  create?: CreateHandler;
-  edit?: EditHandler;
-  destroy?: DestroyHandler;
+  middleware?: RequestHandler[] | RequestHandler;
+  validateRequest?: ResourceHandler;
+  load?: ResourceHandler;
+  create?: ResourceHandler;
+  edit?: ResourceHandler;
+  destroy?: ResourceHandler;
+  upload?: UploadDescription;
 }
 
-function createResourceLoadHandler(load: LoadHandler) {
-  return async function (req: Request, res: Response) {
-    const { offset, limit } = (req as any).data;
-    const ret = load(req, { offset, limit }, req.params);
-    if (isPromise(ret)) {
-      return res.json(await ret);
-    }
-    return res.json(ret);
+export type Route = RouteDefinition | RequestHandler;
+
+function toArray(thing: any) {
+  if (!thing || Array.isArray(thing)) {
+    return thing;
+  }
+  return [thing];
+}
+
+function createUploadHandler(uploadDescription: UploadDescription) {
+  return async function (req: Request, res: Response, next: NextFunction) {
+    const filename = path.resolve(
+      uploadDescription.path || ROOT_PATH,
+      req.file.path
+    );
+    upload(filename).then(
+      (res) =>
+        uploadDescription.callback && uploadDescription.callback(req, res)
+    );
+    return res
+      .status(uploadDescription.httpCode || 202)
+      .json({ message: uploadDescription.responseMessage || 'uploading' });
   };
+}
+
+function createHandler(
+  h: ResourceHandler,
+  { retrieveData, createData, validate }: { [key: string]: any } = {},
+  {
+    statusCodeOnException = 500,
+    statusCodeOnSuccess = 200,
+    statusCodeOnDataCreated = 201,
+    statusCodeOnNoData = 404,
+    statusCodeOnValidateFail = 400,
+  }: { [key: string]: number } = {},
+  {
+    messageOnNoData = 'no data',
+    messageOnException,
+  }: { [key: string]: any } = {},
+
+  ...params: any
+) {
+  return async function (req: Request, res: Response, next: NextFunction) {
+    if (validate) {
+      statusCodeOnException = statusCodeOnValidateFail;
+    }
+    if (createData) {
+      statusCodeOnSuccess = statusCodeOnDataCreated;
+    }
+
+    try {
+      const ret = h(req, res.locals, req.params, ...params) as
+        | Promise<any>
+        | any;
+      if (isPromise(ret)) {
+        try {
+          const val = (await ret) as any;
+          if (!val && retrieveData) {
+            return res
+              .status(statusCodeOnNoData)
+              .json({ message: messageOnNoData });
+          }
+          return res.status(statusCodeOnSuccess).json(val);
+        } catch (err) {
+          return next(
+            createError(
+              statusCodeOnException,
+              messageOnException || err.message
+            )
+          );
+        }
+      }
+      if (!ret) {
+        return res
+          .status(statusCodeOnNoData)
+          .json({ message: messageOnNoData });
+      }
+      return res.status(statusCodeOnSuccess).json(ret);
+    } catch (err) {
+      return next(
+        createError(statusCodeOnException, messageOnException || err.message)
+      );
+    }
+  };
+}
+
+function createResourceLoadHandler(load: ResourceHandler) {
+  return createHandler(load, { retrieveData: true });
+}
+
+function createResourceCreateHandler(create: ResourceHandler) {
+  return createHandler(create, { createData: true });
+}
+
+function createResourceEditHandler(edit: ResourceHandler) {
+  return createHandler(edit);
+}
+
+function createResourceDestroyHandler(destroy: ResourceHandler) {
+  return createHandler(destroy);
+}
+
+function createValidateRequestMiddleware(validateRequest: ResourceHandler) {
+  return createHandler(validateRequest, { validate: true });
+}
+
+const mapPropNameToHandlerCreator = {
+  load: createResourceLoadHandler,
+  create: createResourceCreateHandler,
+  edit: createResourceEditHandler,
+  destroy: createResourceDestroyHandler,
+  upload: createUploadHandler,
+};
+
+function getHandlers(route: Route) {
+  if (typeof route == 'function') {
+    return route;
+  }
+  const handlers = [];
+  for (const key in route) {
+    const prop = route[key as keyof RouteDefinition];
+    if (key == 'handler') {
+      handlers.push(prop);
+    }
+    if (key in mapPropNameToHandlerCreator) {
+      handlers.push((mapPropNameToHandlerCreator as any)[key](prop));
+    }
+  }
+  return handlers;
 }
 
 export function createResourceRouter(routes: {
@@ -60,17 +191,35 @@ export function createResourceRouter(routes: {
 }) {
   const router = express.Router();
   for (const action in routes) {
-    const routeObj = routes[action];
-    const method = mapActionsToMethods[action] || (routeObj as Route).method;
-    const route =
-      mapActionsToRoutesDefaults[action] || (routeObj as Route).route;
-    const handler =
-      typeof routes[action] == 'function'
-        ? routes[action]
-        : (routeObj as Route).load
-        ? createResourceLoadHandler((routeObj as Route).load as LoadHandler)
-        : (routeObj as Route).handler;
-    (router as any)[method as string](route, handler);
+    const route = routes[action] as RouteDefinition;
+    const method = route.method || mapActionsToMethods[action];
+    const routeURL = route.route || mapActionsToRoutesDefaults[action];
+    const handlers = toArray(getHandlers(routes[action]));
+
+    if (method && handlers) {
+      const middleware = toArray(route.middleware) as RequestHandler[];
+      if (middleware) {
+        middleware
+          .filter((midd) => typeof midd == 'function')
+          .forEach((midd) => {
+            (router as any)[method](routeURL, midd);
+          });
+      }
+
+      const validateRequest = route.validateRequest;
+      if (validateRequest) {
+        (router as any)[method](
+          routeURL,
+          createValidateRequestMiddleware(validateRequest)
+        );
+      }
+
+      if (Array.isArray(handlers)) {
+        handlers.forEach((handler) => {
+          (router as any)[method](routeURL, handler);
+        });
+      }
+    }
   }
   return router;
 }

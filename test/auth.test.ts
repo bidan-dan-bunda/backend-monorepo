@@ -1,9 +1,10 @@
 import iconv from 'iconv-lite';
 require('mysql2/node_modules/iconv-lite').encodingExists('foo');
-import { signin, signup, truncate, AuthErrorCodes } from '../src/auth/auth';
+import { signin, signup, AuthErrorCodes } from '../src/auth/auth';
+import { truncate } from './utils';
 
-beforeAll(() => {
-  truncate();
+beforeAll(async () => {
+  await truncate('users');
 });
 
 it('should reject auth from unregistered user', async () => {
@@ -16,7 +17,7 @@ it('should reject auth from unregistered user', async () => {
 
 it('should register user', async () => {
   const ret = await signup({
-    username: 'bagaswh24',
+    username: 'bagaswh2411',
     password: 'passwordku_yg_sangat_aman_skl_bruh2469....',
     name: 'Bagas Wahyu Hidayah',
     user_type: 'u',
@@ -29,7 +30,7 @@ it('should register user', async () => {
 it('should reject registering already registered user', async () => {
   try {
     await signup({
-      username: 'bagaswh24',
+      username: 'bagaswh2411',
       password: 'passwordku_yg_sangat_aman_skl_bruh2469....',
       name: 'Bagas Wahyu Hidayah',
       user_type: 'u',
@@ -43,7 +44,7 @@ it('should reject registering already registered user', async () => {
 
 it('should accept auth from registered user', async () => {
   const ret = await signin({
-    username: 'bagaswh24',
+    username: 'bagaswh2411',
     password: 'passwordku_yg_sangat_aman_skl_bruh2469....',
   });
   expect(ret).not.toBeFalsy();

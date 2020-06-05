@@ -1,1 +1,0 @@
-USE_BETTER_STORE=1 DEBUG="app:*" DB_HOST=localhost DB_NAME=bidandanbunda DB_USER=root DB_PASS=Polkadot69. SESSION_SECRET=polkadot69 npm run start:dev

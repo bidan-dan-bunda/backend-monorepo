@@ -6,7 +6,7 @@ export interface ResourcePage {
 }
 
 export function paging(req: Request, res: Response, next: NextFunction) {
-  const data = (req as any).data || {};
+  const data = (res as any).locals.page || {};
 
   const { page: _page = 1, page_size: _page_size = 10 } = Object.assign(
     {},
@@ -18,6 +18,6 @@ export function paging(req: Request, res: Response, next: NextFunction) {
 
   data.offset = page * pageSize - (pageSize - 1) - 1;
   data.limit = pageSize;
-  (req as any).data = data;
+  (res as any).locals.page = data;
   return next();
 }

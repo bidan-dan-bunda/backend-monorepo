@@ -35,10 +35,10 @@ export class AuthError extends Error {
   }
 }
 
-const database = new Database<User>(UserDefinition, undefined);
+const userDb = new Database<User>(UserDefinition, undefined);
 
 async function userExists(username: string) {
-  return await database.model.findOne({ where: { username } });
+  return await userDb.model.findOne({ where: { username } });
 }
 
 export async function signin({ username, password }: Credential) {
@@ -73,12 +73,5 @@ export async function signup(userDetail: UserSignUpDetail) {
   validateUserDetail(userDetail);
   userDetail.password = await hash(userDetail.password);
 
-  return (await database.model.create(userDetail)).toJSON() as UserFields;
-}
-
-export async function signout(user: UserSignUpDetail) {}
-
-// testing purpose
-export async function truncate() {
-  return await database.model.truncate();
+  return (await userDb.model.create(userDetail)).toJSON() as UserFields;
 }

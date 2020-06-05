@@ -4,17 +4,23 @@ import {
   BuildOptions,
   ModelOptions,
   ModelAttributes,
+  IndexesOptions,
+  FindOptions,
+  CreateOptions,
 } from 'sequelize';
 
 import * as models from './models';
+import { getConfig } from '../config';
 
 let sequelize: Sequelize | null = null;
 
+const config = getConfig();
+
 const defaultDatabaseConnection = {
-  database: process.env.DB_NAME as string,
-  user: process.env.DB_USER as string,
-  password: process.env.DB_PASS as string,
-  host: process.env.DB_HOST as string,
+  database: config.DB_NAME as string,
+  user: config.DB_USER as string,
+  password: config.DB_PASS as string,
+  host: config.DB_HOST as string,
 };
 
 export function getSequelizeInstance({
@@ -51,6 +57,8 @@ export interface ModelDefinition {
 }
 
 export default class Database<T extends Model> {
+  static sequelize = sequelize;
+
   public sequelize: Sequelize;
   public model: typeof Model & {
     new (values?: object, options?: BuildOptions): T;
@@ -83,9 +91,11 @@ export default class Database<T extends Model> {
     }
   }
 
-  async load(options?: any) {
-    return (await this.model.findAll(options)).map(
-      (values) => (values as any).dataValues
-    );
+  async load(options?: FindOptions) {
+    return await this.model.findAll(options);
+  }
+
+  async create(values?: object, options?: CreateOptions) {
+    return await this.model.create(values, options);
   }
 }

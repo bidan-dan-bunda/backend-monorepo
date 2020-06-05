@@ -9,16 +9,12 @@ function getAuthUrl(route: string): string {
 
 jest.setTimeout(1000000);
 
-beforeAll(async () => {
-  await axios.post(getAuthUrl('clear'));
-});
-
 const dummyData1 = {
   name: 'Bagas Wahyu Hidayah',
   user_type: 'u',
   username: 'bagaswh24',
   password: 'polkadot69',
-  address: 'Pakem, Sleman, DI Yogyakarta',
+  full_address: 'Pakem, Sleman, DI Yogyakarta',
   telephone: '081575259164',
 };
 
@@ -27,7 +23,7 @@ const dummyData2 = {
   user_type: 'u',
   username: 'bagusmpk22',
   password: '.bruh999.',
-  address: 'Cangkringan, Sleman, DI Yogyakarta',
+  full_address: 'Cangkringan, Sleman, DI Yogyakarta',
   telephone: '089234432234',
 };
 

@@ -1,22 +1,17 @@
-import os from 'os';
 import dotenv from 'dotenv';
 import isEmpty from 'lodash/isEmpty';
 
-const defaultConfig: { [key: string]: any } = {};
-
 const cache: { [key: string]: any } = {};
-function getConfig(key: string) {
+export function getConfig(key?: string) {
   const env = dotenv.config().parsed;
 
   if (isEmpty(cache)) {
-    for (const key in defaultConfig) {
+    for (const key in env) {
       let value;
-      if (env && key in env) {
-        if (!Number.isNaN(Number(env[key]))) {
-          value = Number(env[key]);
-        }
+      if (!Number.isNaN(Number(env[key]))) {
+        value = Number(env[key]);
       } else {
-        value = defaultConfig[key];
+        value = env[key];
       }
       cache[key] = value;
     }
@@ -24,5 +19,3 @@ function getConfig(key: string) {
 
   return key ? cache[key] : cache;
 }
-
-module.exports = { getConfig };

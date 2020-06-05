@@ -1,6 +1,6 @@
 import express from 'express';
 import { UserFields } from '../../orm/models/user';
-import { signin, signup, signout, truncate } from '../../auth/auth';
+import { signin, signup } from '../../auth/auth';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post('/signin', async (req, res) => {
 
     if (req.session) {
       req.session.isLoggedIn = true;
-      req.session.userId = ret.id;
+      req.session.user = { id: ret.id, user_type: ret.user_type };
     }
 
     return res.status(200).json({
@@ -43,8 +43,7 @@ router.post('/signup', async (req, res) => {
     const ret = await signup(req.body as UserFields);
 
     if (req.session) {
-      req.session.isLoggedIn = true;
-      req.session.userId = ret.id;
+      req.session.user = { id: ret.id, user_type: ret.user_type };
     }
 
     return res.status(200).json({
@@ -74,12 +73,5 @@ router.post('/signout', async (req, res) => {
     });
   });
 });
-
-// development-only route
-process.env.NODE_ENV != 'production' &&
-  router.post('/clear', async (req, res) => {
-    await truncate();
-    res.end();
-  });
 
 export default router;
