@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "lint": "eslint",
     "start:dev": "nodemon",
     "build": "rimraf ./build && tsc",
     "start": "npm run build && node build/index.js"

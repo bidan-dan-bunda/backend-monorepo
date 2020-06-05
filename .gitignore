@@ -15,8 +15,6 @@ pids
 # Dependency directories
 node_modules/
 
-# TypeScript v1 declaration files
-types/
 
 # TypeScript cache
 *.tsbuildinfo
@@ -30,9 +28,6 @@ types/
 # dotenv environment variables file
 .env
 .env.test
-
-# rollup.js default build output
-dist/
 
 tmp/
 temp/
