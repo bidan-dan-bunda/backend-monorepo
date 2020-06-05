@@ -1,9 +1,11 @@
 import dotenv from 'dotenv';
 import isEmpty from 'lodash/isEmpty';
 
+dotenv.config();
+
 const cache: { [key: string]: any } = {};
 export function getConfig(key?: string) {
-  const env = dotenv.config().parsed;
+  const env = process.env;
 
   if (isEmpty(cache)) {
     for (const key in env) {

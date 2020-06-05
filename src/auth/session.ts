@@ -1,10 +1,10 @@
+import { IS_PRODUCTION } from './../constants';
 import session from 'express-session';
 import sessionSequelize from 'connect-session-sequelize';
 import { getSequelizeInstance } from '../orm/database';
 
-const isProduction = process.env.NODE_ENV == 'production';
-const isHttps = (isProduction && process.env.HTTPS_ENABLED) as boolean;
-const useBetterStore = process.env.USE_BETTER_STORE || isProduction;
+const isHttps = (IS_PRODUCTION && process.env.HTTPS_ENABLED) as boolean;
+const useBetterStore = process.env.USE_BETTER_STORE || IS_PRODUCTION;
 
 const SequelizeStore = sessionSequelize(session.Store);
 const store = new SequelizeStore({
