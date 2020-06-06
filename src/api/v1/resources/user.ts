@@ -5,6 +5,7 @@ import Database from '../../../orm/database';
 import multer from 'multer';
 import path from 'path';
 import { upload } from '../../../fileupload';
+import { authorize, isOwningUser } from '../../../auth/middleware';
 
 const db = new Database<User>(UserDefinition, undefined);
 
@@ -22,6 +23,8 @@ const attributeList = [
   'telephone',
 ];
 
+const userOwns = authorize(isOwningUser('params.id'));
+
 export const show: Route = {
   load: (req, page, params) => {
     return db.model.findByPk(params.id, {
@@ -31,6 +34,7 @@ export const show: Route = {
 };
 
 export const edit: Route = {
+  middleware: userOwns,
   edit: (req, locals, params) => {
     return db.model.update(req.body, { where: { id: params.id } });
   },
@@ -40,7 +44,7 @@ const mUpload = multer({ dest: path.resolve(ROOT_PATH, 'tmp/uploads') });
 export const editProfileImage: Route = {
   route: '/:id/profile-image',
   method: 'post',
-  middleware: mUpload.single('profile_image'),
+  middleware: [userOwns, mUpload.single('profile_image')],
   upload: {
     path: ROOT_PATH,
     callback(req, res) {

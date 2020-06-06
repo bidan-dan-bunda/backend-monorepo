@@ -1,6 +1,6 @@
 import Joi from '@hapi/joi';
 
-export const ResponseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
+export const RequestObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   users: Joi.object({
     id: Joi.number(),
     user_type: Joi.string(),

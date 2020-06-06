@@ -5,7 +5,7 @@ import { signin, signup } from '../../auth/auth';
 const router = express.Router();
 
 router.post('/signin', async (req, res) => {
-  if (req.session?.isLoggedIn) {
+  if (req.session?.user) {
     return res.status(200).json({
       message: 'success',
     });
@@ -17,25 +17,23 @@ router.post('/signin', async (req, res) => {
     const ret = await signin({ username, password });
 
     if (req.session) {
-      req.session.isLoggedIn = true;
       req.session.user = { id: ret.id, user_type: ret.user_type };
     }
 
     return res.status(200).json({
-      message: 'success',
+      user_id: ret.id,
     });
-  } catch ({ code, message }) {
-    return res.status(400).json({
-      code,
-      message,
+  } catch ({ message }) {
+    return res.status(401).json({
+      error: message,
     });
   }
 });
 
 router.post('/signup', async (req, res) => {
-  if (req.session?.isLoggedIn) {
+  if (req.session?.user) {
     return res.status(400).json({
-      message: 'logout required',
+      error: 'logout required',
     });
   }
 
@@ -47,15 +45,10 @@ router.post('/signup', async (req, res) => {
     }
 
     return res.status(200).json({
-      status: 200,
-      message: 'success',
-      data: {
-        user_id: ret.id,
-      },
+      user_id: ret.id,
     });
-  } catch ({ code, message }) {
+  } catch ({ message }) {
     return res.status(400).json({
-      code,
       message,
     });
   }

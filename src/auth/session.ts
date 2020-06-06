@@ -14,6 +14,9 @@ store.sync();
 
 // express-session configuration
 export default session({
+  name: 'sid',
+  resave: false,
+  saveUninitialized: false,
   store: useBetterStore && store,
   secret: process.env.SESSION_SECRET as string,
   cookie: {
