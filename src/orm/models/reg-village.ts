@@ -7,11 +7,7 @@ export interface VillageFields {
   district_id: string;
 }
 
-export class Village extends Model implements VillageFields {
-  public id!: string;
-  public name!: string;
-  public district_id!: string;
-}
+export class Village extends Model {}
 
 export const VillageDefinition: ModelDefinition = {
   name: 'Village',

@@ -17,14 +17,7 @@ export interface VideoMateriFields {
   video_id?: number;
 }
 
-export class VideoMateri extends Model implements VideoMateriFields {
-  public id!: number;
-  public content!: string;
-  public thumbnail!: Buffer;
-  public week!: number;
-  public user_bid_id!: number;
-  public video_id?: number;
-}
+export interface VideoMateri extends Model, VideoMateriFields {}
 
 export const VideoMateriDefinition: ModelDefinition = {
   name: 'VideoMateri',
