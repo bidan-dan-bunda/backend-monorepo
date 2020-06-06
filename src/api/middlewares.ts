@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express';
+
 export interface ResourcePage {
   offset: number;
   limit: number;
