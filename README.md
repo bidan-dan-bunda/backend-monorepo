@@ -37,8 +37,3 @@ Untuk melakukan build, jalankan `npm run build`.
 
 Tambahkan environment variables `DEBUG="app:*"` untuk menampilkan semua logging yang berkaitan dengan program.
 
-## Jalankan test suite
-
-Untuk menjalankan test suite, jalankan `npm test`. Direkomendasikan untuk menggunakan option `--runInBand` karena antara satu test dengan test lain sangat _coupled_.
-
-Catatan: beberapa test suite membutuhkan environment variables seperti menjalankan program biasa.
