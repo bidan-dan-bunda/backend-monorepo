@@ -4,7 +4,6 @@ import {
   BuildOptions,
   ModelOptions,
   ModelAttributes,
-  IndexesOptions,
   FindOptions,
   CreateOptions,
 } from 'sequelize';
@@ -33,6 +32,9 @@ export function getSequelizeInstance({
     sequelize = new Sequelize(database, user, password, {
       host,
       dialect: 'mysql',
+      dialectOptions: {
+        connectTimeout: 1800000,
+      },
       pool: {
         max: 5,
         min: 0,
@@ -59,21 +61,15 @@ export interface ModelDefinition {
 export default class Database<T extends Model> {
   static sequelize = sequelize;
 
-  public sequelize: Sequelize;
   public model: typeof Model & {
     new (values?: object, options?: BuildOptions): T;
   };
 
   constructor(model: ModelDefinition, connection = defaultDatabaseConnection) {
-    this.sequelize = getSequelizeInstance(connection);
+    sequelize = getSequelizeInstance(connection);
 
-    if (!this.sequelize.models[model.name]) {
-      if (model.run) {
-        model.run(this.sequelize);
-      } else {
-        sequelize?.define(model.name, model.attributes, model.options) as any;
-      }
-      model.runAfter && process.nextTick(model.runAfter.bind(model));
+    if (!sequelize.models[model.name]) {
+      Database.initializeModel(connection, model);
     }
     this.model = sequelize?.models[model.name] as any;
   }
@@ -82,13 +78,21 @@ export default class Database<T extends Model> {
     const sequelize = getSequelizeInstance(connection);
     for (const name in models) {
       const model = (models as { [name: string]: ModelDefinition })[name];
-      if (model.run) {
-        model.run(sequelize);
-      } else {
-        sequelize?.define(model.name, model.attributes, model.options) as any;
-      }
-      model.runAfter && process.nextTick(model.runAfter.bind(model, sequelize));
+      Database.initializeModel(connection, model);
     }
+  }
+
+  static initializeModel(
+    connection = defaultDatabaseConnection,
+    model: ModelDefinition
+  ) {
+    sequelize = getSequelizeInstance(connection);
+    if (model.run) {
+      model.run(sequelize);
+    } else {
+      sequelize?.define(model.name, model.attributes, model.options) as any;
+    }
+    model.runAfter && process.nextTick(model.runAfter.bind(model, sequelize));
   }
 
   async load(options?: FindOptions) {
