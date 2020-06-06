@@ -25,4 +25,7 @@ export const VideoDefinition: ModelDefinition = {
     thumbnail_url: DataTypes.STRING,
     week: DataTypes.INTEGER,
   },
+  options: {
+    timestamps: false,
+  },
 };
