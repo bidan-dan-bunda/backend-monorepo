@@ -15,10 +15,13 @@ apiRouter.use('/auth', authRouter);
 
 // resources api
 apiRouter.use(paging);
-apiRouter.use('/locations', createResourceRouter(locationRouter));
-apiRouter.use('/users', createResourceRouter(userRouter));
-apiRouter.use('/puskesmas', createResourceRouter(puskesmasRouter));
-apiRouter.use('/videomateri', createResourceRouter(videomateriRouter));
-apiRouter.use('/video', createResourceRouter(videoRouter));
+apiRouter.use('/locations', createResourceRouter(locationRouter, 'locations'));
+apiRouter.use('/users', createResourceRouter(userRouter, 'users'));
+apiRouter.use('/puskesmas', createResourceRouter(puskesmasRouter, 'puskesmas'));
+apiRouter.use(
+  '/videomateri',
+  createResourceRouter(videomateriRouter, 'videomateri')
+);
+apiRouter.use('/video', createResourceRouter(videoRouter, 'video'));
 
 export default apiRouter;

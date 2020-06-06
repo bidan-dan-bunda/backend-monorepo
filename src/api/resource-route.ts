@@ -65,7 +65,7 @@ function toArray(thing: any) {
 }
 
 function createUploadHandler(uploadDescription: UploadDescription) {
-  return async function (req: Request, res: Response, next: NextFunction) {
+  return async function (req: Request, res: Response) {
     const filename = path.resolve(
       uploadDescription.path || ROOT_PATH,
       req.file.path
