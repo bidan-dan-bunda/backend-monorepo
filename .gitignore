@@ -32,6 +32,8 @@ node_modules/
 tmp/
 temp/
 
+test/
+
 devscripts/
 
 build/
