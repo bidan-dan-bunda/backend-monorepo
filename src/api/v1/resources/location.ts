@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { ResourcePage } from '../../middlewares';
+import { ResourcePage } from '../../middleware';
 import Database from '../../../orm/database';
 import { Province, ProvinceDefinition } from '../../../orm/models/reg-province';
 import { Regency, RegencyDefinition } from '../../../orm/models/reg-regency';

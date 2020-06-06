@@ -4,7 +4,7 @@ import {
   VideoMateriDefinition,
 } from './../../../orm/models/videomateri';
 import Database from '../../../orm/database';
-import { ResourcePage } from '../../middlewares';
+import { ResourcePage } from '../../middleware';
 
 const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 

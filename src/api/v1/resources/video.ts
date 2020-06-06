@@ -1,7 +1,7 @@
 import { Video, VideoDefinition } from './../../../orm/models/video';
 import { RouteDefinition } from './../../resource-route';
 import Database from '../../../orm/database';
-import { ResourcePage } from '../../middlewares';
+import { ResourcePage } from '../../middleware';
 
 const db = new Database<Video>(VideoDefinition, undefined);
 

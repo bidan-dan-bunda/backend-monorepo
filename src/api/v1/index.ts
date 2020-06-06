@@ -8,7 +8,7 @@ import * as videomateriRouter from './resources/videomateri';
 import * as videoRouter from './resources/video';
 
 import { createResourceRouter } from '../resource-route';
-import { paging } from '../middlewares';
+import { paging } from '../middleware';
 
 const apiRouter = express.Router();
 apiRouter.use('/auth', authRouter);
