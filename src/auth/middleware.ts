@@ -13,21 +13,6 @@ export function authenticateV1(
   return next(createError(401));
 }
 
-// compare functions
-export function isUserType(userType: string) {
-  return function (req: Request) {
-    return req.session?.user?.user_type == userType;
-  };
-}
-
-export const isBidan = authorize(isUserType('b'));
-
-export function isOwningUser(path: string) {
-  return function (req: Request) {
-    return req.session?.user?.id == get(req, path);
-  };
-}
-
 export function authorize(compareFn: Function) {
   return async function (req: Request, res: Response, next: NextFunction) {
     if (compareFn(req)) {
@@ -37,3 +22,19 @@ export function authorize(compareFn: Function) {
     return next(createError(403));
   };
 }
+
+// compare functions
+export function isUserType(userType: string) {
+  return function (req: Request) {
+    return req.session?.user?.user_type == userType;
+  };
+}
+
+export function isOwningUser(path: string) {
+  return function (req: Request) {
+    return req.session?.user?.id == get(req, path);
+  };
+}
+
+// pre-initialized middlewares
+export const isBidan = authorize(isUserType('b'));
