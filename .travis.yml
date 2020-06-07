@@ -2,4 +2,6 @@ language: node_js
 node_js:
   - 'node'
 script:
-  - npm run lint
+  - PORT=3000 npm run start:dev
+  - npm run test:api
+  - pkill node

@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test:api": "jest test/api --runInBand",
+    "test:coverage": "jest test/api --coverage",
     "lint": "eslint",
     "start:dev": "nodemon",
     "build": "rimraf ./build && tsc",
