@@ -1,3 +1,4 @@
+import { ErrorMessages } from './../../src/api/constants';
 import { AuthErrorCodes } from './../../src/auth/auth';
 import axios, { AxiosResponse } from 'axios';
 import { createUser } from './utils';
@@ -21,7 +22,6 @@ const cookies = {
 it('should register a new user', async () => {
   const res = await axios.post(getAuthUrl('signup'), dummyData1);
   expect(res.status).toBe(200);
-  // expect(res.data).user_.toMatchObject({ data: { user_id: 1 } });
   expect(res.headers['set-cookie']).not.toBeUndefined();
   cookies[dummyData1.username] = res.headers['set-cookie'][0];
 });
@@ -35,21 +35,23 @@ it('should reject registering user when logged in', async () => {
     });
   } catch (err) {
     const res = err.response;
-    expect((res as AxiosResponse<any>).status).toBe(400);
-    expect((res as AxiosResponse<any>).data).toEqual({
-      message: 'logout required',
-    });
+    expect(res.status).toBe(400);
+    expect(res.data.message).toBe(ErrorMessages.LOGOUT_REQUIRED);
   }
 });
 
 it('should reject registering new user with unavailable username', async () => {
+  let threw = false;
   try {
     await axios.post(getAuthUrl('signup'), dummyData1);
   } catch (err) {
+    threw = true;
     const res = err.response;
     expect(res.status).toBe(400);
-    // expect(res.data.code).toBe(AuthErrorCodes.USERNAME_NOT_AVAILABLE);
-    // expect(res.data.message).toBe('username is not available');
-    console.log(res.data);
+    expect(res.data.code).toBe(AuthErrorCodes.USERNAME_NOT_AVAILABLE);
+    expect(res.data.message).toBe(ErrorMessages.USERNAME_NOT_AVAILABLE);
+  }
+  if (!threw) {
+    throw new Error('Request did not throw');
   }
 });

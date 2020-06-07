@@ -1,3 +1,4 @@
+import { ErrorMessages, NonErrorMessages } from './../constants';
 import express from 'express';
 import { UserFields } from '../../orm/models/user';
 import { signin, signup } from '../../auth/auth';
@@ -6,8 +7,8 @@ const router = express.Router();
 
 router.post('/signin', async (req, res) => {
   if (req.session?.user) {
-    return res.status(200).json({
-      message: 'success',
+    return res.status(205).json({
+      message: ErrorMessages.ALREADY_LOGGED_IN,
     });
   }
 
@@ -23,17 +24,18 @@ router.post('/signin', async (req, res) => {
     return res.status(200).json({
       user_id: ret.id,
     });
-  } catch ({ message }) {
+  } catch ({ message, code }) {
     return res.status(401).json({
-      error: message,
+      code,
+      message,
     });
   }
 });
 
 router.post('/signup', async (req, res) => {
   if (req.session?.user) {
-    return res.status(400).json({
-      error: 'logout required',
+    return res.status(205).json({
+      message: ErrorMessages.LOGOUT_REQUIRED,
     });
   }
 
@@ -47,14 +49,21 @@ router.post('/signup', async (req, res) => {
     return res.status(200).json({
       user_id: ret.id,
     });
-  } catch ({ message }) {
+  } catch ({ message, code }) {
     return res.status(400).json({
       message,
+      code,
     });
   }
 });
 
 router.post('/signout', async (req, res) => {
+  if (!req.session?.user) {
+    return res.status(205).json({
+      message: ErrorMessages.NOT_LOGGED_IN,
+    });
+  }
+
   req.session?.destroy((err) => {
     if (err) {
       return res.status(500).json({
@@ -62,7 +71,7 @@ router.post('/signout', async (req, res) => {
       });
     }
     return res.status(200).json({
-      message: 'logout success',
+      message: NonErrorMessages.LOGOUT_SUCCESSFUL,
     });
   });
 });

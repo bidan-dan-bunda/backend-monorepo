@@ -1,3 +1,4 @@
+import { ErrorMessages } from './../api/constants';
 import { User, UserFields, UserDefinition } from '../orm/models/user';
 import Database from '../orm/database';
 import { compare, hash } from './hash';
@@ -45,14 +46,14 @@ export async function signin({ username, password }: Credential) {
   const user = await userExists(username);
   if (!user) {
     throw new AuthError(
-      'User and password combination is invalid',
+      ErrorMessages.INVALID_CREDENTIALS,
       AuthErrorCodes.USER_PASSWORD_INVALID_COMBINATION
     );
   }
   const compareResult = await compare(password, user.password);
   if (!compareResult) {
     throw new AuthError(
-      'User and password combination is invalid',
+      ErrorMessages.INVALID_CREDENTIALS,
       AuthErrorCodes.USER_PASSWORD_INVALID_COMBINATION
     );
   }
@@ -65,7 +66,7 @@ export async function signup(userDetail: UserSignUpDetail) {
   const user = await userExists(userDetail.username);
   if (user) {
     throw new AuthError(
-      'username is not available',
+      ErrorMessages.USERNAME_NOT_AVAILABLE,
       AuthErrorCodes.USERNAME_NOT_AVAILABLE
     );
   }
