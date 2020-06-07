@@ -1,8 +1,8 @@
-import { ObjectSchemaForGenerator } from './schema';
 import { generateDummyData } from '../utils';
 import axios from 'axios';
 import { apiUrl, bidanOnlyResources } from './constants';
 import { login, signup, createUser } from './utils';
+import { ObjectSchemaForGenerator } from './schema';
 
 const user1 = generateDummyData(ObjectSchemaForGenerator.user);
 const user2 = generateDummyData(ObjectSchemaForGenerator.user);
