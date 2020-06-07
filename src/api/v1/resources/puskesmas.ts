@@ -1,4 +1,5 @@
-import { ROOT_PATH } from './../../../constants';
+import { RequestBodyObjectSchema } from './../../schema';
+import { ROOT_PATH, DEFAULT_UPLOAD_PATH } from './../../../constants';
 import {
   Puskesmas,
   PuskesmasDefinition,
@@ -8,6 +9,9 @@ import Database from '../../../orm/database';
 import multer from 'multer';
 import path from 'path';
 import { ResourcePage } from '../../middleware';
+import { Request } from 'express';
+import { validateRequest, createMulterMiddleware } from '../../common';
+import { MAX_UPLOAD_FILE_SIZE } from '../../constants';
 
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
 
@@ -23,13 +27,17 @@ export const show: RouteDefinition = {
   },
 };
 
+const validateRequestPuskesmas = validateRequest('puskesmas');
+
 export const create: RouteDefinition = {
+  validateRequest: validateRequestPuskesmas,
   create: (req) => {
     return db.model.create(req.body);
   },
 };
 
 export const edit: RouteDefinition = {
+  validateRequest: validateRequestPuskesmas,
   edit(req, locals, params) {
     return db.model.update(req.body, {
       where: { id: params.id },
@@ -44,13 +52,15 @@ export const destroy: RouteDefinition = {
   },
 };
 
-const mUpload = multer({ dest: path.resolve(ROOT_PATH, 'tmp/uploads') });
+const destLastPart = 'puskesmas_profile_image';
+const uploadPath = path.resolve(DEFAULT_UPLOAD_PATH, destLastPart);
+const mUpload = createMulterMiddleware(destLastPart);
 export const editProfileImage: Route = {
   route: '/:id/profile-image',
   method: 'post',
   middleware: mUpload.single('profile_image'),
   upload: {
-    path: ROOT_PATH,
+    path: uploadPath,
     callback(req, res) {
       db.model.update(
         { profile_image: res.url },

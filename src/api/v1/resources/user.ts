@@ -1,4 +1,4 @@
-import { ROOT_PATH } from './../../../constants';
+import { ROOT_PATH, DEFAULT_UPLOAD_PATH } from './../../../constants';
 import { Route } from './../../resource-route';
 import { User, UserDefinition } from './../../../orm/models/user';
 import Database from '../../../orm/database';
@@ -6,6 +6,7 @@ import multer from 'multer';
 import path from 'path';
 import { upload } from '../../../fileupload';
 import { authorize, isOwningUser } from '../../../auth/middleware';
+import { createMulterMiddleware } from '../../common';
 
 const db = new Database<User>(UserDefinition, undefined);
 
@@ -40,13 +41,15 @@ export const edit: Route = {
   },
 };
 
-const mUpload = multer({ dest: path.resolve(ROOT_PATH, 'tmp/uploads') });
+const destLastPart = 'user_profile_image';
+const uploadPath = path.resolve(DEFAULT_UPLOAD_PATH, destLastPart);
+const mUpload = createMulterMiddleware(destLastPart);
 export const editProfileImage: Route = {
   route: '/:id/profile-image',
   method: 'post',
   middleware: [userOwns, mUpload.single('profile_image')],
   upload: {
-    path: ROOT_PATH,
+    path: uploadPath,
     callback(req, res) {
       db.model.update(
         { profile_image: res.url },

@@ -10,3 +10,6 @@ export const ErrorMessages = {
 export const NonErrorMessages = {
   LOGOUT_SUCCESSFUL: 'Logout successful',
 };
+
+// 5MB
+export const MAX_UPLOAD_FILE_SIZE = 5000000;
