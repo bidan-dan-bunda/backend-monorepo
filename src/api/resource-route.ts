@@ -1,5 +1,5 @@
 import { Model } from 'sequelize';
-import { ROOT_PATH } from './../constants';
+import { DEFAULT_UPLOAD_PATH } from './../constants';
 import createError from 'http-errors';
 import express, {
   RequestHandler,
@@ -10,6 +10,7 @@ import express, {
 import isPromise from 'is-promise';
 import path from 'path';
 import { upload } from '../fileupload';
+import { UploadApiResponse } from 'cloudinary';
 
 const mapActionsToMethods: { [action: string]: string } = {
   index: 'get',
@@ -32,7 +33,7 @@ export interface ResourceHandler {
 }
 
 export interface UploadCallback {
-  (req: Request, res: any): Promise<any> | any;
+  (req: Request, res: UploadApiResponse): Promise<any> | any;
 }
 
 export interface UploadDescription {
@@ -67,8 +68,8 @@ function toArray(thing: any) {
 function createUploadHandler(uploadDescription: UploadDescription) {
   return async function (req: Request, res: Response) {
     const filename = path.resolve(
-      uploadDescription.path || ROOT_PATH,
-      req.file.path
+      uploadDescription.path || DEFAULT_UPLOAD_PATH,
+      req.file.filename
     );
     upload(filename).then(
       (res) =>
@@ -82,7 +83,12 @@ function createUploadHandler(uploadDescription: UploadDescription) {
 
 function createHandler(
   h: ResourceHandler,
-  { retrieveData, createData, validate }: { [key: string]: any } = {},
+  {
+    retrieveData,
+    createData,
+    destroyData,
+    validate,
+  }: { [key: string]: any } = {},
   {
     statusCodeOnException = 500,
     statusCodeOnSuccess = 200,
@@ -105,6 +111,14 @@ function createHandler(
       statusCodeOnSuccess = statusCodeOnDataCreated;
     }
 
+    function end(statusCode: number, responseBody: any) {
+      res.status(statusCode);
+      if (responseBody && !destroyData) {
+        return res.json(responseBody);
+      }
+      return res.json({ message: 'success' });
+    }
+
     try {
       const ret = h(req, res.locals, req.params, ...params) as
         | Promise<any>
@@ -113,11 +127,9 @@ function createHandler(
         try {
           const val = (await ret) as any;
           if (!val && retrieveData) {
-            return res
-              .status(statusCodeOnNoData)
-              .json({ message: messageOnNoData });
+            return end(statusCodeOnNoData, { message: messageOnNoData });
           }
-          return res.status(statusCodeOnSuccess).json(val);
+          return end(statusCodeOnSuccess, val);
         } catch (err) {
           return next(
             createError(
@@ -128,11 +140,9 @@ function createHandler(
         }
       }
       if (!ret) {
-        return res
-          .status(statusCodeOnNoData)
-          .json({ message: messageOnNoData });
+        return end(statusCodeOnNoData, { message: messageOnNoData });
       }
-      return res.status(statusCodeOnSuccess).json(ret);
+      return end(statusCodeOnSuccess, ret);
     } catch (err) {
       return next(
         createError(statusCodeOnException, messageOnException || err.message)
@@ -154,7 +164,7 @@ function createResourceEditHandler(edit: ResourceHandler) {
 }
 
 function createResourceDestroyHandler(destroy: ResourceHandler) {
-  return createHandler(destroy);
+  return createHandler(destroy, { destroyData: true });
 }
 
 function createValidateRequestMiddleware(validateRequest: ResourceHandler) {

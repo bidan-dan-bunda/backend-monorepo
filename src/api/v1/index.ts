@@ -19,6 +19,6 @@ apiRouter.use('/locations', createResourceRouter(locationRouter));
 apiRouter.use('/users', createResourceRouter(userRouter));
 apiRouter.use('/puskesmas', createResourceRouter(puskesmasRouter));
 apiRouter.use('/videomateri', createResourceRouter(videomateriRouter));
-apiRouter.use('/video', createResourceRouter(videoRouter));
+apiRouter.use('/videos', createResourceRouter(videoRouter));
 
 export default apiRouter;

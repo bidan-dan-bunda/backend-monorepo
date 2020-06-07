@@ -3,42 +3,44 @@ import {
   Puskesmas,
   PuskesmasDefinition,
 } from './../../../orm/models/puskesmas';
-import { Route } from './../../resource-route';
+import { Route, RouteDefinition } from './../../resource-route';
 import Database from '../../../orm/database';
 import multer from 'multer';
 import path from 'path';
+import { ResourcePage } from '../../middleware';
 
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
 
-const attributeList = [
-  'id',
-  'name',
-  'full_address',
-  'address_province',
-  'address_regency',
-  'address_district',
-  'profile_image',
-];
-
-export const index: Route = {
-  load: (req, page, params) => {
-    return db.load({
-      attributes: attributeList,
-    });
+export const index: RouteDefinition = {
+  load: (req, locals, params) => {
+    return db.load(locals.page as ResourcePage);
   },
 };
 
-export const show: Route = {
+export const show: RouteDefinition = {
   load: (req, page, params) => {
-    return db.model.findByPk(params.id, {
-      attributes: attributeList,
-    });
+    return db.model.findByPk(params.id);
   },
 };
 
-export const create: Route = {
+export const create: RouteDefinition = {
   create: (req) => {
     return db.model.create(req.body);
+  },
+};
+
+export const edit: RouteDefinition = {
+  edit(req, locals, params) {
+    return db.model.update(req.body, {
+      where: { id: params.id },
+      returning: true,
+    });
+  },
+};
+
+export const destroy: RouteDefinition = {
+  destroy(req, locals, params) {
+    return db.model.destroy({ where: { id: params.id } });
   },
 };
 

@@ -11,10 +11,9 @@ import { ModelDefinition } from '../database';
 export interface VideoMateriFields {
   id: number;
   content: string;
-  thumbnail?: Buffer;
+  thumbnail_url?: string;
   week?: number;
   user_bid_id: number;
-  video_id?: number;
 }
 
 export interface VideoMateri extends Model, VideoMateriFields {}
@@ -28,10 +27,9 @@ export const VideoMateriDefinition: ModelDefinition = {
       autoIncrement: true,
     },
     content: DataTypes.STRING,
-    thumbnail: DataTypes.BLOB,
+    thumbnail_url: DataTypes.STRING,
     week: DataTypes.INTEGER,
     user_bid_id: DataTypes.INTEGER,
-    video_id: DataTypes.INTEGER,
   },
   options: {
     timestamps: false,
