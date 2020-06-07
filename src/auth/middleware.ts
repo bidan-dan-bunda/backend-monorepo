@@ -20,6 +20,8 @@ export function isUserType(userType: string) {
   };
 }
 
+export const isBidan = authorize(isUserType('b'));
+
 export function isOwningUser(path: string) {
   return function (req: Request) {
     return req.session?.user?.id == get(req, path);

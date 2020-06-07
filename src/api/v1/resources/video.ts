@@ -1,3 +1,4 @@
+import { isBidan } from './../../../auth/middleware';
 import { DEFAULT_UPLOAD_PATH } from './../../../constants';
 import { Video, VideoDefinition } from './../../../orm/models/video';
 import { RouteDefinition } from './../../resource-route';
@@ -21,12 +22,14 @@ export const show: RouteDefinition = {
 };
 
 export const create: RouteDefinition = {
+  middleware: isBidan,
   create(req, locals, params) {
     return db.model.create(req.body);
   },
 };
 
 export const edit: RouteDefinition = {
+  middleware: isBidan,
   edit(req, locals, params) {
     return db.model.update(req.body, {
       where: { id: params.id },
@@ -36,6 +39,7 @@ export const edit: RouteDefinition = {
 };
 
 export const destroy: RouteDefinition = {
+  middleware: isBidan,
   destroy(req, locals, params) {
     return db.model.destroy({ where: { id: params.id } });
   },

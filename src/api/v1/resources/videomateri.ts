@@ -5,7 +5,7 @@ import {
 } from './../../../orm/models/videomateri';
 import Database from '../../../orm/database';
 import { ResourcePage } from '../../middleware';
-import { isUserType, authorize } from '../../../auth/middleware';
+import { isUserType, authorize, isBidan } from '../../../auth/middleware';
 import path from 'path';
 import { DEFAULT_UPLOAD_PATH } from '../../../constants';
 import multer from 'multer';
@@ -23,8 +23,6 @@ export const show: RouteDefinition = {
     return db.model.findByPk(params.id);
   },
 };
-
-const isBidan = authorize(isUserType('b'));
 
 export const create: RouteDefinition = {
   middleware: isBidan,
@@ -44,6 +42,7 @@ export const edit: RouteDefinition = {
 };
 
 export const destroy: RouteDefinition = {
+  middleware: isBidan,
   destroy(req, locals, params) {
     return db.model.destroy({ where: { id: params.id } });
   },
@@ -59,7 +58,7 @@ const mUpload = multer({
 export const editThumbnail: RouteDefinition = {
   route: '/:id/thumbnail',
   method: 'post',
-  middleware: mUpload.single('thumbnail'),
+  middleware: [isBidan, mUpload.single('thumbnail')],
   upload: {
     path: thumbnailUploadPath,
     callback(req, cloudinaryRes) {
