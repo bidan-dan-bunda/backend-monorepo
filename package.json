@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test:api": "jest test/api --runInBand",
+    "test": "jest --runInBand --verbose",
+    "test:api": "jest test/api --runInBand --verbose",
     "test:coverage": "jest test/api --coverage",
     "lint": "eslint",
     "start:dev": "nodemon",
