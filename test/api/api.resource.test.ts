@@ -62,7 +62,7 @@ describe("all methods resources' actions", () => {
     for (const resource of allMethodsResources) {
       const data = await createResource(resource, cookie);
       const url = getUrl(resource) + '/' + data.id;
-      const deleteRes = await axios.delete(url);
+      const deleteRes = await axios.delete(url, { headers: { cookie } });
       expect(deleteRes.status).toBe(200);
       expect(deleteRes.data).toMatchObject({ message: 'success' });
     }
@@ -81,7 +81,7 @@ describe("all methods resources' actions", () => {
       const filepath = path.resolve(ROOT_PATH, 'tmp', 'image.jpg');
       form.append(imageField, fs.createReadStream(filepath));
       const uploadRes = await axios.post(url, form, {
-        headers: form.getHeaders(),
+        headers: { ...form.getHeaders(), cookie },
       });
 
       expect(uploadRes.status).toBe(202);
