@@ -9,6 +9,9 @@ import { isUserType, authorize, isBidan } from '../../../auth/middleware';
 import path from 'path';
 import { DEFAULT_UPLOAD_PATH } from '../../../constants';
 import multer from 'multer';
+import { Request } from 'express';
+import { RequestBodyObjectSchema } from '../../schema';
+import { validateRequest, createMulterMiddleware } from '../../common';
 
 const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 
@@ -24,7 +27,10 @@ export const show: RouteDefinition = {
   },
 };
 
+const validateRequestVideoMateri = validateRequest('videomateri');
+
 export const create: RouteDefinition = {
+  validateRequest: validateRequestVideoMateri,
   middleware: isBidan,
   create(req, locals, params) {
     const body = req.body;
@@ -34,6 +40,7 @@ export const create: RouteDefinition = {
 };
 
 export const edit: RouteDefinition = {
+  validateRequest: validateRequestVideoMateri,
   middleware: isBidan,
   edit(req, locals, params) {
     const body = req.body;
@@ -48,13 +55,9 @@ export const destroy: RouteDefinition = {
   },
 };
 
-const thumbnailUploadPath = path.resolve(
-  DEFAULT_UPLOAD_PATH,
-  'videomateri_thumbnails'
-);
-const mUpload = multer({
-  dest: thumbnailUploadPath,
-});
+const destLastPart = 'videomateri_thumbnails';
+const thumbnailUploadPath = path.resolve(DEFAULT_UPLOAD_PATH, destLastPart);
+const mUpload = createMulterMiddleware(destLastPart);
 export const editThumbnail: RouteDefinition = {
   route: '/:id/thumbnail',
   method: 'post',

@@ -126,6 +126,10 @@ function createHandler(
       if (isPromise(ret)) {
         try {
           const val = (await ret) as any;
+          if (!val && validate) {
+            return next();
+          }
+
           if (!val && retrieveData) {
             return end(statusCodeOnNoData, { message: messageOnNoData });
           }
@@ -139,7 +143,11 @@ function createHandler(
           );
         }
       }
-      if (!ret) {
+      if (!ret && validate) {
+        return next();
+      }
+
+      if (!ret && retrieveData) {
         return end(statusCodeOnNoData, { message: messageOnNoData });
       }
       return end(statusCodeOnSuccess, ret);
