@@ -1,7 +1,7 @@
 import { ObjectSchemaForGenerator } from './schema';
 import { generateDummyData } from '../utils';
 import axios from 'axios';
-import { apiUrl } from './constants';
+import { apiUrl, bidanOnlyResources } from './constants';
 import { login, signup, createUser } from './utils';
 
 const user1 = generateDummyData(ObjectSchemaForGenerator.user);
@@ -10,6 +10,8 @@ const user2 = generateDummyData(ObjectSchemaForGenerator.user);
 function createBidan() {
   return createUser('b');
 }
+
+jest.setTimeout(50000);
 
 describe('should authorize request for action on resources', () => {
   describe('users resource', () => {
@@ -60,34 +62,58 @@ describe('should authorize request for action on resources', () => {
   });
 
   describe('bidan-related resources', () => {
-    test('bidan (and only bidan) should be able to create and edit videomateri', async () => {
-      const bidan1 = createBidan();
-      const bidan2 = createBidan();
-      const bidan3 = createBidan();
-
-      await Promise.all([signup(bidan1), signup(bidan2), signup(bidan3)]);
-
+    test('bidan (and only bidan) should be able to create and edit videomateri, video, and', async () => {
       try {
+        const bidan1 = createBidan();
+        const bidan2 = createBidan();
+        const bidan3 = createBidan();
+
+        await Promise.all([signup(bidan1), signup(bidan2), signup(bidan3)]);
+
         const loginRes = await login(bidan1);
         const cookies = loginRes.headers['set-cookie'];
 
-        // create
-        const videoMateri1 = generateDummyData(
-          ObjectSchemaForGenerator.videomateri
-        );
-        const res1 = await axios.post(apiUrl + '/videomateri', videoMateri1, {
-          headers: { cookie: cookies[0] },
-        });
+        for (const resource of bidanOnlyResources) {
+          // create
+          const resourceData1 = generateDummyData(
+            ObjectSchemaForGenerator[resource]
+          );
+          const url = apiUrl + '/' + resource;
+          const res1 = await axios.post(url, resourceData1, {
+            headers: { cookie: cookies[0] },
+          });
 
-        // edit
-        const videoMateri2 = generateDummyData(
-          ObjectSchemaForGenerator.videomateri
-        );
-        await axios.put(apiUrl + '/videomateri/' + res1.data.id, videoMateri2, {
-          headers: { cookie: cookies[0] },
-        });
+          // edit
+          const resourceData2 = generateDummyData(
+            ObjectSchemaForGenerator[resource]
+          );
+          await axios.put(url + '/' + res1.data.id, resourceData2, {
+            headers: { cookie: cookies[0] },
+          });
+
+          let threw = false;
+          const nonBidanUser = createUser('u');
+          await signup(nonBidanUser);
+
+          const nonBidanLoginRes = await login(nonBidanUser);
+          const nonBidanCookie = nonBidanLoginRes.headers['set-cookie'][0];
+          try {
+            const resourceData3 = generateDummyData(
+              ObjectSchemaForGenerator[resource]
+            );
+            await axios.put(url + '/' + res1.data.id, resourceData3, {
+              headers: { cookie: nonBidanCookie },
+            });
+          } catch (err) {
+            threw = true;
+            expect(err.response.status).toBe(403);
+          }
+
+          if (!threw) {
+            throw new Error('Request did not throw');
+          }
+        }
       } catch (err) {
-        console.log(err.response.data);
         throw err;
       }
     });

@@ -1,5 +1,5 @@
 import { ROOT_PATH } from './../../src/constants';
-import { apiUrl } from './constants';
+import { apiUrl, allMethodsResources, resourcesWithUploads } from './constants';
 import axios from 'axios';
 import { ObjectSchemaForGenerator, ResponsesObjectSchema } from './schema';
 import { generateDummyData } from '../utils';
@@ -7,25 +7,6 @@ import fs from 'fs-extra';
 import path from 'path';
 import FormData from 'form-data';
 import { createUser, signup, login } from './utils';
-
-const GETOnlyResources = [
-  'locations/provinces',
-  'locations/regencies',
-  'locations/districts',
-  'locations/villages',
-];
-
-const allMethodsResources = ['videomateri', 'videos', 'puskesmas'];
-
-const resourcesWithUploads = [
-  { name: 'videos', postfixPath: 'thumbnail', imageField: 'thumbnail' },
-  { name: 'videomateri', postfixPath: 'thumbnail', imageField: 'thumbnail' },
-  {
-    name: 'puskesmas',
-    postfixPath: 'profile-image',
-    imageField: 'profile_image',
-  },
-];
 
 function getUrl(resource: string, version = 1) {
   return `${apiUrl}/${resource}`;
