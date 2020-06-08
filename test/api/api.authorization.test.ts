@@ -45,7 +45,7 @@ describe('should authorize request for action on resources', () => {
       try {
         const loginRes = await login(user2);
         const cookies = loginRes.headers['set-cookie'];
-        const userId = loginRes.data.user_id;
+        const userId = loginRes.data.data.user_id;
 
         const editUrl = `${apiUrl}/users/${userId}`;
 
@@ -87,7 +87,7 @@ describe('should authorize request for action on resources', () => {
           const resourceData2 = generateDummyData(
             ObjectSchemaForGenerator[resource]
           );
-          await axios.put(url + '/' + res1.data.id, resourceData2, {
+          await axios.put(url + '/' + res1.data.data.id, resourceData2, {
             headers: { cookie: cookies[0] },
           });
 

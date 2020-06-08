@@ -114,7 +114,7 @@ function createHandler(
     function end(statusCode: number, responseBody: any) {
       res.status(statusCode);
       if (responseBody && !destroyData) {
-        return res.json(responseBody);
+        return res.json({ data: responseBody });
       }
       return res.json({ message: 'success' });
     }

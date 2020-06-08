@@ -22,7 +22,9 @@ router.post('/signin', async (req, res) => {
     }
 
     return res.status(200).json({
-      user_id: ret.id,
+      data: {
+        user_id: ret.id,
+      },
     });
   } catch ({ message, code }) {
     return res.status(401).json({
@@ -47,7 +49,9 @@ router.post('/signup', async (req, res) => {
     }
 
     return res.status(200).json({
-      user_id: ret.id,
+      data: {
+        user_id: ret.id,
+      },
     });
   } catch ({ message, code }) {
     return res.status(400).json({
