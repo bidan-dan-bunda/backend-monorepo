@@ -32,14 +32,14 @@ const validateRequestPuskesmas = validateRequest('puskesmas');
 export const create: RouteDefinition = {
   validateRequest: validateRequestPuskesmas,
   create: (req) => {
-    return db.model.create(req.body);
+    return db.create(req.body);
   },
 };
 
 export const edit: RouteDefinition = {
   validateRequest: validateRequestPuskesmas,
   edit(req, locals, params) {
-    return db.model.update(req.body, {
+    return db.update(req.body, {
       where: { id: params.id },
       returning: true,
     });
@@ -48,7 +48,7 @@ export const edit: RouteDefinition = {
 
 export const destroy: RouteDefinition = {
   destroy(req, locals, params) {
-    return db.model.destroy({ where: { id: params.id } });
+    return db.destroy({ where: { id: params.id } });
   },
 };
 
@@ -62,10 +62,7 @@ export const editProfileImage: Route = {
   upload: {
     path: uploadPath,
     callback(req, res) {
-      db.model.update(
-        { profile_image: res.url },
-        { where: { id: req.params.id } }
-      );
+      db.update({ profile_image: res.url }, { where: { id: req.params.id } });
     },
   },
 };

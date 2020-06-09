@@ -30,7 +30,7 @@ export const create: RouteDefinition = {
   validateRequest: validateRequestVideo,
   middleware: isBidan,
   create(req, locals, params) {
-    return db.model.create(req.body);
+    return db.create(req.body);
   },
 };
 
@@ -38,7 +38,7 @@ export const edit: RouteDefinition = {
   validateRequest: validateRequestVideo,
   middleware: isBidan,
   edit(req, locals, params) {
-    return db.model.update(req.body, {
+    return db.update(req.body, {
       where: { id: params.id },
       returning: true,
     });
@@ -48,7 +48,7 @@ export const edit: RouteDefinition = {
 export const destroy: RouteDefinition = {
   middleware: isBidan,
   destroy(req, locals, params) {
-    return db.model.destroy({ where: { id: params.id } });
+    return db.destroy({ where: { id: params.id } });
   },
 };
 
@@ -62,7 +62,7 @@ export const editThumbnail: RouteDefinition = {
   upload: {
     path: thumbnailUploadPath,
     callback(req, cloudinaryRes) {
-      db.model.update(
+      db.update(
         { thumbnail_url: cloudinaryRes.url },
         { where: { id: req.params.id } }
       );

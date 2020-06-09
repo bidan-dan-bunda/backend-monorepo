@@ -66,3 +66,15 @@ export const RequestBodyObjectSchema: { [id: string]: Joi.ObjectSchema } = {
     district_id: Joi.string().required(),
   }),
 };
+
+// array, error, single, no data
+export interface ApiResponse {
+  data?: any;
+  message?: string;
+}
+
+export interface ApiResponseError {
+  code: string;
+  message?: string;
+  details?: any;
+}

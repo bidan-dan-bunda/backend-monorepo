@@ -44,14 +44,14 @@ export const edit: RouteDefinition = {
   middleware: isBidan,
   edit(req, locals, params) {
     const body = req.body;
-    return db.model.update(body, { where: { id: params.id } });
+    return db.update(body, { where: { id: params.id } });
   },
 };
 
 export const destroy: RouteDefinition = {
   middleware: isBidan,
   destroy(req, locals, params) {
-    return db.model.destroy({ where: { id: params.id } });
+    return db.destroy({ where: { id: params.id } });
   },
 };
 
@@ -65,7 +65,7 @@ export const editThumbnail: RouteDefinition = {
   upload: {
     path: thumbnailUploadPath,
     callback(req, cloudinaryRes) {
-      db.model.update(
+      db.update(
         { thumbnail_url: cloudinaryRes.url },
         { where: { id: req.params.id } }
       );

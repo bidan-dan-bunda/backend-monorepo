@@ -1,3 +1,4 @@
+import * as HttpStatusCodes from 'http-status-codes';
 import express, { NextFunction, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -30,7 +31,11 @@ app.use('/api/v1', apiRouterV1);
 // app.use('/api/v2', apiRouterV2);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  return res.status(err.status || 500).json(err);
+  return res.status(err.status || 500).json({
+    code: err.code,
+    message: err.message || HttpStatusCodes.getStatusText(err.code),
+    details: err.details,
+  });
 });
 
 export default app;

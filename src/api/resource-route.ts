@@ -1,4 +1,3 @@
-import { Model } from 'sequelize';
 import { DEFAULT_UPLOAD_PATH } from './../constants';
 import createError from 'http-errors';
 import express, {
@@ -11,6 +10,7 @@ import isPromise from 'is-promise';
 import path from 'path';
 import { upload } from '../fileupload';
 import { UploadApiResponse } from 'cloudinary';
+import * as HttpStatusCodes from 'http-status-codes';
 
 const mapActionsToMethods: { [action: string]: string } = {
   index: 'get',
@@ -76,8 +76,12 @@ function createUploadHandler(uploadDescription: UploadDescription) {
         uploadDescription.callback && uploadDescription.callback(req, res)
     );
     return res
-      .status(uploadDescription.httpCode || 202)
-      .json({ message: uploadDescription.responseMessage || 'uploading' });
+      .status(uploadDescription.httpCode || HttpStatusCodes.ACCEPTED)
+      .json({
+        message:
+          uploadDescription.responseMessage ||
+          HttpStatusCodes.getStatusText(HttpStatusCodes.ACCEPTED),
+      });
   };
 }
 
@@ -87,18 +91,32 @@ function createHandler(
     retrieveData,
     createData,
     destroyData,
+    editData,
     validate,
   }: { [key: string]: any } = {},
   {
-    statusCodeOnException = 500,
-    statusCodeOnSuccess = 200,
-    statusCodeOnDataCreated = 201,
-    statusCodeOnNoData = 404,
-    statusCodeOnValidateFail = 400,
+    statusCodeOnException = HttpStatusCodes.INTERNAL_SERVER_ERROR,
+    statusCodeOnSuccess = HttpStatusCodes.OK,
+    statusCodeOnDataCreated = HttpStatusCodes.CREATED,
+    statusCodeOnDataDestroyed = HttpStatusCodes.NO_CONTENT,
+    statusCodeOnNoData = HttpStatusCodes.NOT_FOUND,
+    statusCodeOnValidateFail = HttpStatusCodes.BAD_REQUEST,
   }: { [key: string]: number } = {},
   {
-    messageOnNoData = 'no data',
-    messageOnException,
+    messageOnException = HttpStatusCodes.getStatusText(
+      HttpStatusCodes.INTERNAL_SERVER_ERROR
+    ),
+    messageOnSuccess = HttpStatusCodes.getStatusText(HttpStatusCodes.OK),
+    messageOnDataCreated = HttpStatusCodes.getStatusText(
+      HttpStatusCodes.CREATED
+    ),
+    messageOnDataDestroyed = HttpStatusCodes.getStatusText(
+      HttpStatusCodes.NO_CONTENT
+    ),
+    messageOnNoData = HttpStatusCodes.getStatusText(HttpStatusCodes.NOT_FOUND),
+    messageOnValidateFail = HttpStatusCodes.getStatusText(
+      HttpStatusCodes.BAD_REQUEST
+    ),
   }: { [key: string]: any } = {},
 
   ...params: any
@@ -106,17 +124,27 @@ function createHandler(
   return async function (req: Request, res: Response, next: NextFunction) {
     if (validate) {
       statusCodeOnException = statusCodeOnValidateFail;
+      messageOnException = messageOnValidateFail;
     }
     if (createData) {
       statusCodeOnSuccess = statusCodeOnDataCreated;
+      messageOnSuccess = messageOnDataCreated;
     }
 
-    function end(statusCode: number, responseBody: any) {
+    function end(statusCode: number, responseBody?: any) {
       res.status(statusCode);
-      if (responseBody && !destroyData) {
-        return res.json({ data: responseBody });
+
+      if (statusCode == statusCodeOnNoData) {
+        return res.json({ message: messageOnNoData });
       }
-      return res.json({ message: 'success' });
+
+      if (responseBody) {
+        if (createData || retrieveData || editData) {
+          return res.json({ data: responseBody });
+        }
+      }
+
+      return res.json({ message: messageOnSuccess });
     }
 
     try {
@@ -130,15 +158,15 @@ function createHandler(
             return next();
           }
 
-          if (!val && retrieveData) {
-            return end(statusCodeOnNoData, { message: messageOnNoData });
+          if (!val && (retrieveData || editData || destroyData)) {
+            return next(createError(statusCodeOnNoData));
           }
           return end(statusCodeOnSuccess, val);
         } catch (err) {
           return next(
             createError(
               statusCodeOnException,
-              messageOnException || err.message
+              err.message || messageOnException
             )
           );
         }
@@ -147,13 +175,13 @@ function createHandler(
         return next();
       }
 
-      if (!ret && retrieveData) {
-        return end(statusCodeOnNoData, { message: messageOnNoData });
+      if (!ret && (retrieveData || editData || destroyData)) {
+        return next(createError(statusCodeOnNoData));
       }
       return end(statusCodeOnSuccess, ret);
     } catch (err) {
       return next(
-        createError(statusCodeOnException, messageOnException || err.message)
+        createError(statusCodeOnException, err.message || messageOnException)
       );
     }
   };
@@ -168,7 +196,7 @@ function createResourceCreateHandler(create: ResourceHandler) {
 }
 
 function createResourceEditHandler(edit: ResourceHandler) {
-  return createHandler(edit);
+  return createHandler(edit, { editData: true });
 }
 
 function createResourceDestroyHandler(destroy: ResourceHandler) {

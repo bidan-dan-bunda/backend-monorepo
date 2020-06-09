@@ -37,7 +37,7 @@ export const show: Route = {
 export const edit: Route = {
   middleware: userOwns,
   edit: (req, locals, params) => {
-    return db.model.update(req.body, { where: { id: params.id } });
+    return db.update(req.body, { where: { id: params.id } });
   },
 };
 
@@ -51,10 +51,7 @@ export const editProfileImage: Route = {
   upload: {
     path: uploadPath,
     callback(req, res) {
-      db.model.update(
-        { profile_image: res.url },
-        { where: { id: req.params.id } }
-      );
+      db.update({ profile_image: res.url }, { where: { id: req.params.id } });
     },
   },
 };

@@ -24,42 +24,92 @@ beforeAll(async () => {
 });
 
 describe("all methods resources' actions", () => {
-  test('create', async () => {
-    for (const resource of allMethodsResources) {
-      const responseSchema = ResponseObjectSchema[resource];
-      if (responseSchema) {
-        const data = await createResource(resource, cookie);
-        expect(data).toHaveProperty('data');
-        responseSchema.validateAsync(data.data);
+  describe('create', () => {
+    test('create', async () => {
+      for (const resource of allMethodsResources) {
+        const responseSchema = ResponseObjectSchema[resource];
+        if (responseSchema) {
+          const data = await createResource(resource, cookie);
+          expect(data).toHaveProperty('data');
+          responseSchema.validateAsync(data.data);
+        }
       }
-    }
+    });
   });
 
-  test('show', async () => {
-    for (const resource of allMethodsResources) {
-      const url = getResourceUrl(resource) + '/1';
-      const res = await axios.get(url);
-      expect(res.data).toHaveProperty('data');
-      ResponseObjectSchema[resource].validateAsync(res.data.data);
-    }
+  describe('show', () => {
+    test('show existing data', async () => {
+      for (const resource of allMethodsResources) {
+        const url = getResourceUrl(resource) + '/1';
+        const res = await axios.get(url);
+        expect(res.data).toHaveProperty('data');
+        ResponseObjectSchema[resource].validateAsync(res.data.data);
+      }
+    });
+
+    test('show non-existing data', async () => {
+      for (const resource of allMethodsResources) {
+        const url = getResourceUrl(resource) + '/1000000';
+        const res = await axios.get(url, { validateStatus: () => true });
+        expect(res.status).toBe(404);
+        expect(res.data).toMatchObject({ message: 'Not Found' });
+      }
+    });
   });
 
-  test('edit', async () => {
-    for (const resource of allMethodsResources) {
-      const data = await createResource(resource, cookie);
-      expect(data).toHaveProperty('data');
-      ResponseObjectSchema[resource].validateAsync(data.data);
-    }
+  describe.skip('edit', () => {
+    test('edit existing data', async () => {
+      for (const resource of allMethodsResources) {
+        const data = await createResource(resource, cookie);
+        const url = getResourceUrl(resource) + '/' + data.data.id;
+        const res = await axios.put(url, {
+          headers: { cookie },
+          validateStatus: () => true,
+        });
+        expect(res.data).toHaveProperty('message');
+      }
+    });
+
+    test('edit non-existing data', async () => {
+      for (const resource of allMethodsResources) {
+        const url = getResourceUrl(resource) + '/1000000';
+        const res = await axios.put(url, {
+          headers: { cookie },
+          validateStatus: () => true,
+        });
+        expect(res.status).toBe(404);
+        expect(res.data).toHaveProperty('message');
+        expect(res.data).toMatchObject({ message: 'Not Found' });
+      }
+    });
   });
 
-  test('destroy', async () => {
-    for (const resource of allMethodsResources) {
-      const data = await createResource(resource, cookie);
-      const url = getResourceUrl(resource) + '/' + data.data.id;
-      const deleteRes = await axios.delete(url, { headers: { cookie } });
-      expect(deleteRes.status).toBe(200);
-      expect(deleteRes.data).toMatchObject({ message: 'success' });
-    }
+  describe('destroy', () => {
+    test('destroy existing data', async () => {
+      for (const resource of allMethodsResources) {
+        const data = await createResource(resource, cookie);
+        const url = getResourceUrl(resource) + '/' + data.data.id;
+        const res = await axios.delete(url, {
+          headers: { cookie },
+          validateStatus: () => true,
+        });
+        expect(res.status).toBe(200);
+        expect(res.data).toMatchObject({ message: 'OK' });
+      }
+    });
+
+    test('destroy non-existing data', async () => {
+      for (const resource of allMethodsResources) {
+        const url = getResourceUrl(resource) + '/1000000';
+        const res = await axios.delete(url, {
+          headers: { cookie },
+          validateStatus: () => true,
+        });
+        expect(res.status).toBe(404);
+        expect(res.data).toHaveProperty('message');
+        expect(res.data).toMatchObject({ message: 'Not Found' });
+      }
+    });
   });
 
   test.skip('upload', async () => {

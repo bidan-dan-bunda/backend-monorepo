@@ -6,6 +6,8 @@ import {
   ModelAttributes,
   FindOptions,
   CreateOptions,
+  UpdateOptions,
+  DestroyOptions,
 } from 'sequelize';
 
 import * as models from './models';
@@ -34,6 +36,7 @@ export function getSequelizeInstance({
       dialect: 'mysql',
       dialectOptions: {
         connectTimeout: 1800000,
+        flags: ['FOUND_ROWS'],
       },
       pool: {
         max: 5,
@@ -101,5 +104,17 @@ export default class Database<T extends Model> {
 
   async create(values?: object, options?: CreateOptions) {
     return await this.model.create(values, options);
+  }
+
+  async update(values: object, options: UpdateOptions) {
+    const ret = await this.model.update(values, options);
+    if (!ret[1]) {
+      return null;
+    }
+    return ret;
+  }
+
+  async destroy(options: DestroyOptions) {
+    return await this.model.destroy(options);
   }
 }
