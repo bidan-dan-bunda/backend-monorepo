@@ -31,7 +31,9 @@ export const showTokens: RouteDefinition = {
   middleware: isAdmin,
   method: 'get',
   load(req, locals, res) {
-    return tokenDb.load({ where: { pus_id: req.params.id } });
+    return tokenDb.load({
+      where: { pus_id: req.params.id, attributes: { exclude: ['created_at'] } },
+    });
   },
 };
 

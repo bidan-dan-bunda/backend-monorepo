@@ -7,6 +7,7 @@ import path from 'path';
 import { DEFAULT_UPLOAD_PATH } from '../constants';
 import { isAdmin } from '../auth/middleware';
 import { any } from 'bluebird';
+import { FindOptions } from 'sequelize/types';
 
 export function index(
   db: Database<any>,
@@ -23,7 +24,7 @@ export function index(
 
 export function show(
   db: Database<any>,
-  dbOptions?: any,
+  dbOptions?: FindOptions,
   props?: RouteDefinition
 ): RouteDefinition {
   return {

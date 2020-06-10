@@ -52,11 +52,7 @@ export function getSequelizeInstance({
 
 const defaultModelOptions: ModelOptions = {
   hooks: {
-    beforeFind(options) {
-      options.attributes = {
-        exclude: ['created_at', 'updated_at', 'password'],
-      };
-    },
+    beforeFind(options) {},
   },
 };
 
