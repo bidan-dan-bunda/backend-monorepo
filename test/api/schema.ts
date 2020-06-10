@@ -29,7 +29,7 @@ export const ResponseObjectSchema: { [id: string]: ObjectSchema } = {
 // I have to create separate schemas to generate random data because I couldn't find
 // stable Joi schema-based object generator.
 export const ObjectSchemaForGenerator: { [id: string]: any } = {
-  user: {
+  users: {
     type: 'object',
     properties: {
       user_type: {

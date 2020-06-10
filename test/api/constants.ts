@@ -1,22 +1,19 @@
-export const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+import { getConfig } from '../../src/config';
+import { AxiosRequestConfig } from 'axios';
+
+export const token = getConfig('TOKEN');
+export const authorizationHeader = 'Bearer ' + token;
+
+export const axiosConfigDefaults: AxiosRequestConfig = {
+  validateStatus: () => true,
+};
+
+// urls
+export const baseUrl = process.env.URL || 'http://localhost:3000';
 export const apiUrl = `${baseUrl}/api/v1`;
 export const authUrl = `${apiUrl}/auth`;
 
-export const GETOnlyResources = [
-  'locations/provinces',
-  'locations/regencies',
-  'locations/districts',
-  'locations/villages',
-];
-
-export const allMethodsResources = ['videomateri', 'videos', 'puskesmas'];
-
-export const resourcesWithUploads = [
-  { name: 'videos', postfixPath: 'thumbnail', imageField: 'thumbnail' },
-  { name: 'videomateri', postfixPath: 'thumbnail', imageField: 'thumbnail' },
-  {
-    name: 'puskesmas',
-    postfixPath: 'profile-image',
-    imageField: 'profile_image',
-  },
-];
+// resources
+export const resources = ['videomateri', 'videos', 'puskesmas', 'users'];
+export const allMethodsResources = resources.filter((res) => res != 'users');
+export const uploadPaths = [];

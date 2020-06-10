@@ -1,81 +1,133 @@
-import { authUrl, apiUrl } from './constants';
-import axios from 'axios';
-import { generateDummyData } from '../utils';
-import { ObjectSchemaForGenerator } from './schema';
+import faker from 'faker/locale/id_ID';
+import {
+  authUrl,
+  apiUrl,
+  axiosConfigDefaults,
+  authorizationHeader,
+} from './constants';
+import { ObjectSchemaForGenerator, ResponseObjectSchema } from './schema';
+import jsf from 'json-schema-faker';
+import axios, { AxiosRequestConfig, AxiosPromise } from 'axios';
 
-export function createUser(userType: 'b' | 'u') {
-  const user = generateDummyData(ObjectSchemaForGenerator.user);
-  user.user_type = userType;
-  return user;
+// axios requests
+axios.defaults.validateStatus = axiosConfigDefaults.validateStatus;
+
+interface RequestConfig {
+  url: string;
+  method: any;
+  authentication?: 'authorization' | 'cookie';
+  authorization?: string;
+  cookie?: string;
+  body?: any;
+  config?: AxiosRequestConfig;
 }
 
-export async function login(user: any) {
-  const { username, password } = user;
-  return await axios.post(authUrl + '/signin', {
-    username,
-    password,
-  });
-}
-
-export async function signup(user: any) {
-  return axios.post(authUrl + '/signup', user);
-}
-
-export async function loginAndGetCokie(user: any) {
-  const loginRes = await login(user);
-  return loginRes.headers['set-cookie'][0];
-}
-
-export async function signupAndGetCookie(userType: 'b' | 'u') {
-  const userData = createUser(userType);
-  await signup(userData);
-  return await loginAndGetCokie(userData);
-}
-
-export function getResourceUrl(resource: string, version = 1) {
-  return `${apiUrl}/${resource}`;
-}
-
-export function createResourceData(resource: string) {
-  const schema = ObjectSchemaForGenerator[resource];
-  if (schema) {
-    return generateDummyData(schema);
-  }
-}
-
-export async function postResourceData(
-  url: string,
-  data: any,
-  { cookie = '', authorization = '' }: any
-) {
-  const res = await axios.post(url, data, {
-    headers: { cookie, authorization },
-  });
-  return res.data;
-}
-
-export async function createResource(
-  resource: string,
-  { cookie, authorization }: any
-) {
-  const data = createResourceData(resource);
-  const url = getResourceUrl(resource);
-  return await postResourceData(url, data, { cookie, authorization });
-}
-
-const token = process.env.TOKEN;
-const authorization = 'Bearer ' + token;
-
-export function requestWithToken(
-  url: any,
-  method: any,
-  body?: any,
-  headers?: object
-) {
+export function req({ url, method, body, config }: RequestConfig) {
   return axios({
     url,
     method,
     data: body,
-    headers: { authorization, ...headers },
+    ...config,
+  });
+}
+
+export function reqWithAuthorization({
+  url,
+  method,
+  authorization = authorizationHeader,
+  body,
+  config = {},
+}: RequestConfig) {
+  return req({
+    url,
+    method,
+    body,
+    config: {
+      headers: {
+        authorization,
+        ...config,
+      },
+    },
+  });
+}
+
+export function reqWithSessionCookies({
+  url,
+  method,
+  cookie,
+  body,
+  config,
+}: RequestConfig) {
+  return req({
+    url,
+    method,
+    body,
+    config: {
+      headers: {
+        cookie,
+        ...config,
+      },
+    },
+  });
+}
+
+export function reqToResourceUrl({
+  resource,
+  urlPostfix = '',
+  method = 'post',
+  authentication = { authorization: authorizationHeader },
+  body,
+  config,
+}: RequestConfig & any): AxiosPromise<any> {
+  let fn: any;
+  if (authentication) {
+    fn = authentication.authorization
+      ? reqWithAuthorization
+      : reqWithSessionCookies;
+  } else {
+    fn = req;
+  }
+  return fn({
+    url: resourceUrl(resource) + '/' + urlPostfix,
+    method,
+    body,
+    config,
+    cookie: authentication.cookie,
+    authorization: authentication.authorization,
+  });
+}
+
+// data generator
+export function getSchemaForGenerator(resource: string) {
+  return ObjectSchemaForGenerator[resource];
+}
+
+export function getSchemaForValidaton(resource: string) {
+  return ResponseObjectSchema[resource];
+}
+
+jsf.extend('faker', () => faker);
+export function generateData(schema: any) {
+  return jsf.generate(schema);
+}
+
+// url
+export const resourceUrl = (resource: string) => `${apiUrl}/${resource}`;
+export const authActionUrl = (action: string) => `${authUrl}/${action}`;
+
+// auth
+export async function signin(credential: any) {
+  return req({
+    url: authActionUrl('signin'),
+    method: 'post',
+    body: credential,
+  });
+}
+
+export async function signup(user: any) {
+  return req({
+    url: authActionUrl('signup'),
+    method: 'post',
+    body: user,
   });
 }

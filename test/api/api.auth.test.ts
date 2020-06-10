@@ -1,116 +1,182 @@
-import { baseUrl } from './constants';
 import { ErrorMessages } from './../../src/api/constants';
-import { AuthErrorCodes } from './../../src/auth/auth';
-import axios, { AxiosResponse } from 'axios';
-import { createUser } from './utils';
+import {
+  reqWithAuthorization,
+  generateData,
+  getSchemaForGenerator,
+  req,
+  authActionUrl,
+  reqWithSessionCookies,
+} from './utils';
+import { axiosConfigDefaults, apiUrl } from './constants';
+import axios from 'axios';
 
-const url = process.env.URL || 'http://localhost:3000';
+axios.defaults = { ...axios.defaults, ...axiosConfigDefaults };
 
-function getAuthUrl(route: string): string {
-  return `${url}/api/v1/auth/${route}`;
-}
+// requirements
+// - admin SHOULD has all privileges ON ALL RESOURCES
+// - regular users SHOULD ONLY be able to SIGNUP, SIGNIN, SIGNOUT, and EDIT its own profile
 
-jest.setTimeout(50000);
-
-const dummyData1 = createUser('u');
-const dummyData2 = createUser('u');
-const dummyData3 = createUser('u');
-
-const cookies = {
-  [dummyData1.username]: '',
-  [dummyData2.username]: '',
-  [dummyData3.username]: '',
-};
-
-describe('admin', () => {
-  it('should accept request containing valid authorization token', async () => {
-    const token = process.env.TOKEN;
-    const res = await axios.get(baseUrl + '/api/v1', {
-      headers: { authorization: 'Bearer ' + token },
+describe('authentication', () => {
+  describe('admin', () => {
+    test('should be able to access api/v1', async () => {
+      const res = await reqWithAuthorization({
+        url: `${apiUrl}`,
+        method: 'get',
+      });
+      expect(res.status).toBe(200);
     });
-    expect(res.data).toMatchObject({ message: 'Hello :)' });
+
+    test('should reject request with invalid authorization token', async () => {
+      const res = await reqWithAuthorization({
+        url: `${apiUrl}`,
+        authorization: 'bababa',
+        method: 'get',
+      });
+      expect(res.status).toBe(401);
+    });
   });
 
-  it('should reject request containing invalid authorization token', async () => {
-    const token = 'fafifu';
-    expect(
-      axios.get(baseUrl + '/api/v1', {
-        headers: { authorization: 'Bearer ' + token },
-      })
-    ).rejects.toThrow();
+  describe('regular users', () => {
+    const cookies: any = {};
+    const schema = getSchemaForGenerator('users');
+    const user1 = generateData(schema);
+
+    test('should register new user', async () => {
+      const res = await req({
+        url: authActionUrl('signup'),
+        method: 'post',
+        body: user1,
+      });
+      expect(res.status).toBe(200);
+      const cookie = res.headers['set-cookie'][0];
+      cookies[user1.username] = cookie;
+    });
+
+    test('should reject registering new user when logged in', async () => {
+      const user3 = generateData(schema);
+      const res = await reqWithSessionCookies({
+        cookie: cookies[user1.username],
+        url: authActionUrl('signup'),
+        method: 'post',
+        body: user3,
+      });
+      expect(res.status).toBe(205);
+      expect(res.data).toMatchObject({
+        message: ErrorMessages.LOGOUT_REQUIRED,
+      });
+    });
+
+    test('should reject registering new user with unavailable username', async () => {
+      const res = await req({
+        url: authActionUrl('signup'),
+        method: 'post',
+        body: user1,
+      });
+      expect(res.status).toBe(400);
+    });
+
+    test('should accept login with correct credential', async () => {
+      const res = await req({
+        url: authActionUrl('signin'),
+        method: 'post',
+        body: { username: user1.username, password: user1.password },
+      });
+      expect(res.status).toBe(200);
+      const cookie = res.headers['set-cookie'][0];
+      cookies[user1.username] = cookie;
+    });
+
+    test('should reject login correctly with correct credential', async () => {
+      const user2 = generateData(schema);
+      const res = await req({
+        url: authActionUrl('signin'),
+        method: 'post',
+        body: { username: user2.username, password: user2.password },
+      });
+      expect(res.status).toBe(401);
+    });
+
+    test('should reject login when already logged in', async () => {
+      const res = await reqWithSessionCookies({
+        cookie: cookies[user1.username],
+        url: authActionUrl('signin'),
+        method: 'post',
+        body: { username: user1.username, password: user1.password },
+      });
+      expect(res.status).toBe(205);
+      expect(res.data).toMatchObject({
+        message: ErrorMessages.ALREADY_LOGGED_IN,
+      });
+    });
+
+    test('should logout succesfully', async () => {
+      const res = await reqWithSessionCookies({
+        cookie: cookies[user1.username],
+        url: authActionUrl('signout'),
+        method: 'post',
+      });
+      expect(res.status).toBe(200);
+    });
+
+    test('should reject logging out when not logged in', async () => {
+      const res = await reqWithSessionCookies({
+        cookie: cookies[user1.username],
+        url: authActionUrl('signout'),
+        method: 'post',
+      });
+      expect(res.status).toBe(205);
+      expect(res.data).toMatchObject({
+        message: ErrorMessages.NOT_LOGGED_IN,
+      });
+    });
   });
 });
 
-describe('regular users', () => {
-  // Data #1 [success]
-  it('should register a new user', async () => {
-    const res = await axios.post(getAuthUrl('signup'), dummyData1);
-    expect(res.status).toBe(200);
-    expect(res.headers['set-cookie']).not.toBeUndefined();
-    cookies[dummyData1.username] = res.headers['set-cookie'][0];
-  });
+/* describe('should be able to do anything (all CRUD operations)', () => {
+      test('should be able to create data', async () => {
+        for (const resource of allMethodsResources) {
+          const schema = getSchemaForGenerator(resource);
+          if (schema) {
+            const data = generateData(schema);
+            const res = await reqToResourceUrl({ resource, body: data });
+            expect(res.status).toBe(201);
+          }
+        }
+      });
 
-  // Data #2 [failed]
-  it('should reject registering user when logged in', async () => {
-    try {
-      await axios.post(getAuthUrl('signup'), dummyData2, {
-        headers: {
-          cookie: cookies[dummyData1.username],
-        },
+      test('should be able to edit data', async () => {
+        for (const resource of allMethodsResources) {
+          const schema = getSchemaForGenerator(resource);
+          if (schema) {
+            const data = generateData(schema);
+            const postRes = await reqToResourceUrl({ resource, body: data });
+            const resourceId = postRes.data.data.id;
+            const putRes = await reqToResourceUrl({
+              resource,
+              urlPostfix: resourceId,
+              method: 'put',
+              body: data,
+            });
+            expect(putRes.status).toBe(200);
+          }
+        }
       });
-    } catch (err) {
-      const res = err.response;
-      expect(res.status).toBe(400);
-      expect(res.data.message).toBe(ErrorMessages.LOGOUT_REQUIRED);
-    }
-  });
 
-  // Data #1 [failed]
-  it('should reject registering new user with unavailable username', async () => {
-    let threw = false;
-    try {
-      await axios.post(getAuthUrl('signup'), dummyData1);
-    } catch (err) {
-      threw = true;
-      const res = err.response;
-      expect(res.status).toBe(400);
-      expect(res.data.code).toBe(AuthErrorCodes.USERNAME_NOT_AVAILABLE);
-      expect(res.data.message).toBe(ErrorMessages.USERNAME_NOT_AVAILABLE);
-    }
-    if (!threw) {
-      throw new Error('Request did not throw');
-    }
-  });
-
-  // Data #2 [success]
-  it('should accept logging in with valid credentials', async () => {
-    await axios.post(getAuthUrl('signup'), dummyData2);
-    try {
-      axios.post(getAuthUrl('signin'), {
-        username: dummyData2.username,
-        password: dummyData2.password,
+      test('should be able to destroy data', async () => {
+        for (const resource of allMethodsResources) {
+          const schema = getSchemaForGenerator(resource);
+          if (schema) {
+            const data = generateData(schema);
+            const postRes = await reqToResourceUrl({ resource, body: data });
+            const resourceId = postRes.data.data.id;
+            const deleteRes = await reqToResourceUrl({
+              resource,
+              urlPostfix: resourceId,
+              method: 'delete',
+              body: data,
+            });
+            expect(deleteRes.status).toBe(200);
+          }
+        }
       });
-    } catch (err) {
-      expect(err.response.status).toBe(401);
-      expect(err.response.data).toMatchObject({
-        message: ErrorMessages.INVALID_CREDENTIALS,
-      });
-    }
-  });
-
-  // Data #3 [failed]
-  it('should reject logging in with invalid credentials', async () => {
-    await axios.post(getAuthUrl('signup'), dummyData3);
-    try {
-      axios.post(getAuthUrl('signin'), {
-        username: dummyData3.username,
-        password: dummyData3.password + 'qwertyuioasdfghjkzxcvbnm',
-      });
-    } catch (err) {
-      expect(err.response.status).toBe(401);
-      expect(err.response.data).toMatchObject({
-        message: ErrorMessages.INVALID_CREDENTIALS,
-      });
-    }
-  });
-});
+    }); */
