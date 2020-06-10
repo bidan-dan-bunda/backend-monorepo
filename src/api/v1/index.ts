@@ -1,6 +1,6 @@
 import express from 'express';
-import authRouter from './auth';
 
+import * as authRouter from './auth';
 import * as locationRouter from './resources/location';
 import * as userRouter from './resources/user';
 import * as puskesmasRouter from './resources/puskesmas';
@@ -16,7 +16,7 @@ apiRouter.get('/', (req, res) => {
   return res.json({ message: 'Hello :)' });
 });
 
-apiRouter.use('/auth', authRouter);
+apiRouter.use('/auth', createResourceRouter(authRouter));
 
 // resources api
 apiRouter.use(paging);
