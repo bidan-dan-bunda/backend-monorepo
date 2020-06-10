@@ -26,12 +26,14 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   videomateri: Joi.object({
     content: Joi.string().required(),
     week: Joi.number().allow(null),
+    thumbnail_url: Joi.string().allow(null),
   }),
 
   video: Joi.object({
     title: Joi.string().required(),
     week: Joi.number().allow(null),
     url: Joi.string().allow(null),
+    thumbnail_url: Joi.string().allow(null),
   }),
 
   'locations/province': Joi.object({

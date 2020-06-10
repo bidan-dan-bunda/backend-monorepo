@@ -94,8 +94,9 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
         type: 'string',
         faker: 'lorem.sentences',
       },
+      thumbnail_url: { type: 'string', faker: 'image.imageUrl' },
     },
-    required: ['content'],
+    required: ['content', 'thumbnail_url', 'week'],
   },
 
   videos: {
@@ -106,8 +107,9 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
         faker: 'name.title',
       },
       url: { type: 'string', faker: 'internet.url' },
+      thumbnail_url: { type: 'string', faker: 'image.imageUrl' },
       week: { type: 'integer', minimum: 0 },
     },
-    required: ['title'],
+    required: ['title', 'thumbnail_url', 'week'],
   },
 };
