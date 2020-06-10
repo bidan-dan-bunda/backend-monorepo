@@ -9,7 +9,6 @@ import * as commonRoutes from '../../common-route-definitions';
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
 const schema = BaseObjectSchema.puskesmas;
 
-export const index = commonRoutes.index(db);
 export const show = commonRoutes.show(db);
 export const create = commonRoutes.create(db, schema);
 export const edit = commonRoutes.edit(db, schema);
