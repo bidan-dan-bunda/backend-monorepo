@@ -140,7 +140,7 @@ function createHandler(
 
       if (responseBody) {
         if (createData || retrieveData) {
-          return res.json({ data: responseBody });
+          return res.json({ data: responseBody, pages: res.locals.page.pages });
         }
       }
 

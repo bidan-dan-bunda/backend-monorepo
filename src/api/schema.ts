@@ -74,6 +74,7 @@ export const UserLoginSchema = Joi.object({
 
 // array, error, single, no data
 export interface ApiResponse {
+  pages?: number;
   data?: any;
   message?: string;
 }

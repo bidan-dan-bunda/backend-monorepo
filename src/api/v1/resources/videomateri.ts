@@ -6,12 +6,14 @@ import {
 import Database from '../../../orm/database';
 import { BaseObjectSchema } from '../../schema';
 import * as commonRoutes from '../../common-route-definitions';
+import { countPages } from '../../common';
 
 const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 const schema = BaseObjectSchema.videomateri;
 
 export const index: RouteDefinition = {
-  load(req, locals, res) {
+  async load(req, locals, res) {
+    await countPages(db, locals.page.limit, locals);
     const { week } = req.query;
     const opts = { ...locals.page };
     if (week) {

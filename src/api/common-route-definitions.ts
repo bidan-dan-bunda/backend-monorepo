@@ -2,11 +2,10 @@ import { ObjectSchema } from '@hapi/joi';
 import Database from '../orm/database';
 import { RouteDefinition } from './resource-route';
 import { ResourcePage } from './middleware';
-import { validateRequest, createMulterMiddleware } from './common';
+import { validateRequest, createMulterMiddleware, countPages } from './common';
 import path from 'path';
 import { DEFAULT_UPLOAD_PATH } from '../constants';
 import { isAdmin } from '../auth/middleware';
-import { any } from 'bluebird';
 import { FindOptions } from 'sequelize/types';
 
 export function index(
@@ -15,7 +14,8 @@ export function index(
   props?: RouteDefinition
 ): RouteDefinition {
   return {
-    load(req, locals, params) {
+    async load(req, locals, params) {
+      await countPages(db, locals.page.limit, locals);
       return db.load({ ...(locals.page as ResourcePage), ...dbOptions });
     },
     ...props,
