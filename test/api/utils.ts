@@ -43,13 +43,39 @@ export function createResourceData(resource: string) {
   }
 }
 
-export async function postResourceData(url: string, data: any, cookie: string) {
-  const res = await axios.post(url, data, { headers: { cookie } });
+export async function postResourceData(
+  url: string,
+  data: any,
+  { cookie = '', authorization = '' }: any
+) {
+  const res = await axios.post(url, data, {
+    headers: { cookie, authorization },
+  });
   return res.data;
 }
 
-export async function createResource(resource: string, cookie: string) {
+export async function createResource(
+  resource: string,
+  { cookie, authorization }: any
+) {
   const data = createResourceData(resource);
   const url = getResourceUrl(resource);
-  return await postResourceData(url, data, cookie);
+  return await postResourceData(url, data, { cookie, authorization });
+}
+
+const token = process.env.TOKEN;
+const authorization = 'Bearer ' + token;
+
+export function requestWithToken(
+  url: any,
+  method: any,
+  body?: any,
+  headers?: object
+) {
+  return axios({
+    url,
+    method,
+    data: body,
+    headers: { authorization, ...headers },
+  });
 }

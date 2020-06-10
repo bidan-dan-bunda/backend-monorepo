@@ -13,7 +13,6 @@ export interface VideoMateriFields {
   content: string;
   thumbnail_url?: string;
   week?: number;
-  user_bid_id: number;
 }
 
 export interface VideoMateri extends Model, VideoMateriFields {}
@@ -29,7 +28,6 @@ export const VideoMateriDefinition: ModelDefinition = {
     content: DataTypes.STRING,
     thumbnail_url: DataTypes.STRING,
     week: DataTypes.INTEGER,
-    user_bid_id: DataTypes.INTEGER,
   },
   options: {
     timestamps: false,

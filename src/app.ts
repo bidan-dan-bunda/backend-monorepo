@@ -4,12 +4,13 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import logger from 'morgan';
 import session from './auth/session';
+import unless from 'express-unless';
 
 import Database from './orm/database';
 Database.initializeModels();
 
 import apiRouterV1 from './api/v1/index';
-import apiRouterV2 from './api/v2/index';
+import { authenticateV1 } from './auth/middleware';
 
 const app = express();
 
@@ -27,8 +28,19 @@ app.use(cookieParser());
 // session
 app.use(session);
 
+(authenticateV1 as any).unless = unless;
+
+app.use(
+  (authenticateV1 as any).unless({
+    path: [
+      { url: '/api/v1/auth/signin', methods: ['POST'] },
+      { url: '/api/v1/auth/signup', methods: ['POST'] },
+      { url: '/api/v1/auth/signout', methods: ['POST'] },
+    ],
+  })
+);
+
 app.use('/api/v1', apiRouterV1);
-// app.use('/api/v2', apiRouterV2);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   return res.status(err.status || 500).json({

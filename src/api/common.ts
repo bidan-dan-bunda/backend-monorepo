@@ -1,15 +1,12 @@
+import { ObjectSchema } from '@hapi/joi';
 import { DEFAULT_UPLOAD_PATH } from './../constants';
-import { RequestBodyObjectSchema } from './schema';
 import { Request } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { MAX_UPLOAD_FILE_SIZE } from './constants';
 
-export function validateRequest(
-  resource: keyof typeof RequestBodyObjectSchema
-) {
+export function validateRequest(schema: ObjectSchema) {
   return function (req: Request) {
-    const schema = RequestBodyObjectSchema[resource];
     const { error, value } = schema.validate(req.body);
     if (error) {
       throw error;

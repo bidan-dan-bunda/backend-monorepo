@@ -10,9 +10,6 @@ export const GETOnlyResources = [
 ];
 
 export const allMethodsResources = ['videomateri', 'videos', 'puskesmas'];
-export const bidanOnlyResources = allMethodsResources.filter(
-  (resource) => resource != 'puskesmas'
-);
 
 export const resourcesWithUploads = [
   { name: 'videos', postfixPath: 'thumbnail', imageField: 'thumbnail' },

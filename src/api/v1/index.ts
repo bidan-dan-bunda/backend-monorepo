@@ -11,6 +11,11 @@ import { createResourceRouter } from '../resource-route';
 import { paging } from '../middleware';
 
 const apiRouter = express.Router();
+
+apiRouter.get('/', (req, res) => {
+  return res.json({ message: 'Hello :)' });
+});
+
 apiRouter.use('/auth', authRouter);
 
 // resources api

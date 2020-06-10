@@ -108,7 +108,7 @@ export default class Database<T extends Model> {
 
   async update(values: object, options: UpdateOptions) {
     const ret = await this.model.update(values, options);
-    if (!ret[1]) {
+    if (ret[0] == 0) {
       return null;
     }
     return ret;

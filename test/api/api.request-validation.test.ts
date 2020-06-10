@@ -1,25 +1,22 @@
 import { allMethodsResources } from './constants';
 import {
-  signupAndGetCookie,
   createResource,
   createResourceData,
   postResourceData,
   getResourceUrl,
 } from './utils';
 
-let cookie = '';
-beforeAll(async () => {
-  cookie = await signupAndGetCookie('b');
-});
+let token = process.env.TOKEN;
+let authorization = 'Bearer ' + token;
 
 describe('request body validation', () => {
   test('should accept valid request body for each resource', async () => {
     try {
       for (const resource of allMethodsResources) {
-        await createResource(resource, cookie);
+        await createResource(resource, { authorization });
       }
     } catch (err) {
-      console.log(err.response.data);
+      console.log(err);
       throw err;
     }
   });
@@ -31,7 +28,7 @@ describe('request body validation', () => {
         const data = await createResourceData(resource);
         delete data.name;
         const url = getResourceUrl(resource);
-        await postResourceData(url, data, cookie);
+        await postResourceData(url, data, { authorization });
       }
     } catch (err) {
       threw = true;

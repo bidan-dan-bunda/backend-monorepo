@@ -94,9 +94,8 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
         type: 'string',
         faker: 'lorem.sentences',
       },
-      user_bid_id: 1,
     },
-    required: ['content', 'user_bid_id'],
+    required: ['content'],
   },
 
   videos: {
