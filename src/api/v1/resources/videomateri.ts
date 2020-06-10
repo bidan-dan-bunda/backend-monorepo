@@ -3,11 +3,11 @@ import {
   VideoMateriDefinition,
 } from './../../../orm/models/videomateri';
 import Database from '../../../orm/database';
-import { RequestBodyObjectSchema } from '../../schema';
+import { BaseObjectSchema } from '../../schema';
 import * as commonRoutes from '../../common-route-definitions';
 
 const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
-const schema = RequestBodyObjectSchema.videomateri;
+const schema = BaseObjectSchema.videomateri;
 
 export const index = commonRoutes.index(db);
 export const show = commonRoutes.show(db);

@@ -1,12 +1,11 @@
 import Joi from '@hapi/joi';
 
 // Joi schema
-export const RequestBodyObjectSchema: { [id: string]: Joi.ObjectSchema } = {
+export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   user: Joi.object({
     user_type: Joi.string().required(),
     name: Joi.string().required(),
     username: Joi.string().required(),
-    password: Joi.string().required(),
     full_address: Joi.string().allow(null),
     address_province: Joi.string().allow(null),
     address_regency: Joi.string().allow(null),
@@ -52,6 +51,12 @@ export const RequestBodyObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   'locations/village': Joi.object({
     name: Joi.string().required(),
     district_id: Joi.string().required(),
+  }),
+};
+
+export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
+  user: BaseObjectSchema.user.keys({
+    password: Joi.string().required(),
   }),
 };
 

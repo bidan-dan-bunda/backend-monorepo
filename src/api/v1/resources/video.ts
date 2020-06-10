@@ -1,10 +1,10 @@
 import Database from '../../../orm/database';
-import { RequestBodyObjectSchema } from '../../schema';
+import { BaseObjectSchema } from '../../schema';
 import * as commonRoutes from '../../common-route-definitions';
 import { Video, VideoDefinition } from '../../../orm/models/video';
 
 const db = new Database<Video>(VideoDefinition, undefined);
-const schema = RequestBodyObjectSchema.video;
+const schema = BaseObjectSchema.video;
 
 export const index = commonRoutes.index(db);
 export const show = commonRoutes.show(db);

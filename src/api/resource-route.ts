@@ -139,7 +139,7 @@ function createHandler(
       }
 
       if (responseBody) {
-        if (createData || retrieveData || editData) {
+        if (createData || retrieveData) {
           return res.json({ data: responseBody });
         }
       }

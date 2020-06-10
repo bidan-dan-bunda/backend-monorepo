@@ -1,11 +1,11 @@
 import { ROOT_PATH } from './../../src/constants';
-import { apiUrl, allMethodsResources, resourcesWithUploads } from './constants';
+import { allMethodsResources, resourcesWithUploads } from './constants';
 import axios from 'axios';
 import { generateDummyData } from '../utils';
 import fs from 'fs-extra';
 import path from 'path';
 import FormData from 'form-data';
-import { signupAndGetCookie, createResource, getResourceUrl } from './utils';
+import { createResource, getResourceUrl } from './utils';
 import { ResponseObjectSchema, ObjectSchemaForGenerator } from './schema';
 
 let token = process.env.TOKEN;
@@ -27,7 +27,7 @@ describe("all methods resources' actions", () => {
 
   describe('show', () => {
     test('show existing data', async () => {
-      for (const resource of allMethodsResources) {
+      for (const resource of ['users', ...allMethodsResources]) {
         const url = getResourceUrl(resource) + '/1';
         const res = await axios.get(url, { headers: { authorization } });
         expect(res.data).toHaveProperty('data');
@@ -36,7 +36,7 @@ describe("all methods resources' actions", () => {
     });
 
     test('show non-existing data', async () => {
-      for (const resource of allMethodsResources) {
+      for (const resource of ['users', ...allMethodsResources]) {
         const url = getResourceUrl(resource) + '/1000000';
         const res = await axios.get(url, {
           headers: { authorization },

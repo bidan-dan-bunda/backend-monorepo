@@ -3,11 +3,11 @@ import {
   PuskesmasDefinition,
 } from './../../../orm/models/puskesmas';
 import Database from '../../../orm/database';
-import { RequestBodyObjectSchema } from '../../schema';
+import { BaseObjectSchema } from '../../schema';
 import * as commonRoutes from '../../common-route-definitions';
 
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
-const schema = RequestBodyObjectSchema.puskesmas;
+const schema = BaseObjectSchema.puskesmas;
 
 export const index = commonRoutes.index(db);
 export const show = commonRoutes.show(db);

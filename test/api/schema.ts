@@ -1,7 +1,7 @@
-import { RequestBodyObjectSchema } from './../../src/api/schema';
+import { BaseObjectSchema } from './../../src/api/schema';
 import Joi, { ObjectSchema } from '@hapi/joi';
 
-const { user, puskesmas, videomateri, video } = RequestBodyObjectSchema;
+const { user, puskesmas, videomateri, video } = BaseObjectSchema;
 
 export const ResponseObjectSchema: { [id: string]: ObjectSchema } = {
   users: user.keys({

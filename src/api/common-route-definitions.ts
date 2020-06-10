@@ -10,11 +10,12 @@ import { any } from 'bluebird';
 
 export function index(
   db: Database<any>,
+  dbOptions?: any,
   props?: RouteDefinition
 ): RouteDefinition {
   return {
     load(req, locals, params) {
-      return db.load(locals.page as ResourcePage);
+      return db.load({ ...(locals.page as ResourcePage), ...dbOptions });
     },
     ...props,
   };
@@ -22,11 +23,12 @@ export function index(
 
 export function show(
   db: Database<any>,
+  dbOptions?: any,
   props?: RouteDefinition
 ): RouteDefinition {
   return {
     load(req, locals, params) {
-      return db.model.findByPk(params.id);
+      return db.model.findByPk(params.id, { ...dbOptions });
     },
     ...props,
   };
@@ -35,13 +37,14 @@ export function show(
 export function create(
   db: Database<any>,
   schema: ObjectSchema,
+  dbOptions?: any,
   props?: RouteDefinition
 ): RouteDefinition {
   return {
     validateRequest: validateRequest(schema),
     middleware: isAdmin,
     create(req, locals, params) {
-      return db.create(req.body);
+      return db.create(req.body, { ...dbOptions });
     },
     ...props,
   };
@@ -50,6 +53,7 @@ export function create(
 export function edit(
   db: Database<any>,
   schema: ObjectSchema,
+  dbOptions?: any,
   props?: RouteDefinition
 ): RouteDefinition {
   return {
@@ -57,7 +61,7 @@ export function edit(
     middleware: isAdmin,
     edit(req, locals, params) {
       const body = req.body;
-      return db.update(body, { where: { id: params.id } });
+      return db.update(body, { where: { id: params.id }, ...dbOptions });
     },
     ...props,
   };
@@ -65,12 +69,13 @@ export function edit(
 
 export function destroy(
   db: Database<any>,
+  dbOptions?: any,
   props?: RouteDefinition
 ): RouteDefinition {
   return {
     middleware: isAdmin,
     destroy(req, locals, params) {
-      return db.destroy({ where: { id: params.id } });
+      return db.destroy({ where: { id: params.id }, ...dbOptions });
     },
     ...props,
   };
