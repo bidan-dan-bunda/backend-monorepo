@@ -3,7 +3,7 @@ import Joi from '@hapi/joi';
 // Joi schema
 export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   user: Joi.object({
-    user_type: Joi.string().required(),
+    user_type: Joi.string().valid('b', 'u').required(),
     name: Joi.string().required(),
     username: Joi.string().required(),
     full_address: Joi.string().allow(null),
@@ -57,8 +57,18 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
 export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   user: BaseObjectSchema.user.keys({
     password: Joi.string().required(),
+    puskesmas_token: Joi.string().when('user_type', {
+      is: 'b',
+      then: Joi.required,
+      otherwise: Joi.optional(),
+    }),
   }),
 };
+
+export const UserLoginSchema = Joi.object({
+  username: Joi.string().required(),
+  password: Joi.string().required(),
+});
 
 // array, error, single, no data
 export interface ApiResponse {

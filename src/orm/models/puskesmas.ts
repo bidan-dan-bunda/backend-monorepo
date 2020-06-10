@@ -1,3 +1,4 @@
+import { PuskesmasToken } from './puskesmas-token';
 import { Province } from './reg-province';
 import { Model, DataTypes } from 'sequelize';
 import { ModelDefinition } from '../database';
@@ -14,7 +15,15 @@ export interface PuskesmasFields {
   profile_image?: string;
 }
 
-export interface Puskesmas extends Model, PuskesmasFields {}
+export class Puskesmas extends Model implements PuskesmasFields {
+  id!: number;
+  name!: string;
+  full_address?: string;
+  address_province?: string;
+  address_regency?: string;
+  address_district?: string;
+  profile_image?: string;
+}
 
 export const PuskesmasDefinition: ModelDefinition = {
   name: 'puskesmas',
@@ -53,4 +62,14 @@ export const PuskesmasDefinition: ModelDefinition = {
     tableName: 'puskesmas',
     timestamps: false,
   },
+
+  run(sequelize) {
+    Puskesmas.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
+  },
+
+  runAfter(sequelize) {},
 };

@@ -141,12 +141,13 @@ DROP TABLE IF EXISTS `puskesmas_tokens`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `puskesmas_tokens` (
-  `id` int NOT NULL AUTO_INCREMENT,
   `token` varchar(7) NOT NULL,
-  `pus_id` int NOT NULL,
-  PRIMARY KEY (`id`),
+  `pus_id` int DEFAULT NULL,
+  `created_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`token`),
+  UNIQUE KEY `token_UNIQUE` (`token`),
   KEY `fk_access_codes_puskesmas_idx` (`pus_id`),
-  CONSTRAINT `fk_access_codes_puskesmas` FOREIGN KEY (`pus_id`) REFERENCES `puskesmas` (`id`)
+  CONSTRAINT `fk_access_codes_puskesmas` FOREIGN KEY (`pus_id`) REFERENCES `puskesmas` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -371,4 +372,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-10 13:14:24
+-- Dump completed on 2020-06-10 20:04:44

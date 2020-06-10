@@ -57,7 +57,7 @@ export async function signin({ username, password }: Credential) {
       AuthErrorCodes.USER_PASSWORD_INVALID_COMBINATION
     );
   }
-  return user.toJSON() as User;
+  return user;
 }
 
 function validateUserDetail(userDetail: UserSignUpDetail) {}
@@ -74,5 +74,5 @@ export async function signup(userDetail: UserSignUpDetail) {
   validateUserDetail(userDetail);
   userDetail.password = await hash(userDetail.password);
 
-  return (await userDb.model.create(userDetail)).toJSON() as UserFields;
+  return await userDb.model.create(userDetail);
 }
