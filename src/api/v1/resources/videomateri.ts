@@ -1,3 +1,4 @@
+import { RouteDefinition } from './../../resource-route';
 import {
   VideoMateri,
   VideoMateriDefinition,
@@ -9,7 +10,19 @@ import * as commonRoutes from '../../common-route-definitions';
 const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 const schema = BaseObjectSchema.videomateri;
 
-export const index = commonRoutes.index(db);
+export const index: RouteDefinition = {
+  load(req, locals, res) {
+    const { week } = req.query;
+    const opts = { ...locals.page };
+    if (week) {
+      opts.where = {
+        week,
+      };
+    }
+    return db.load(opts);
+  },
+};
+
 export const show = commonRoutes.show(db);
 export const create = commonRoutes.create(db, schema);
 export const edit = commonRoutes.edit(db, schema);
