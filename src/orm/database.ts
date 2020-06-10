@@ -12,6 +12,7 @@ import {
 
 import * as models from './models';
 import { getConfig } from '../config';
+import { ModelHooks } from 'sequelize/types/lib/hooks';
 
 let sequelize: Sequelize | null = null;
 
@@ -49,15 +50,23 @@ export function getSequelizeInstance({
   return sequelize;
 }
 
+const defaultModelOptions: ModelOptions = {
+  hooks: {
+    beforeFind(options) {
+      options.attributes = { exclude: ['created_at', 'updated_at'] };
+    },
+  },
+};
+
 export interface ModelDefinition {
   name: string;
   attributes: ModelAttributes;
   options?: ModelOptions;
   run?: {
-    (s: Sequelize): void;
+    (s: Sequelize, defaultOptions: ModelOptions): void;
   };
   runAfter?: {
-    (s: Sequelize): void;
+    (s: Sequelize, defaultOptions: ModelOptions): void;
   };
 }
 
@@ -75,6 +84,10 @@ export default class Database<T extends Model> {
       Database.initializeModel(connection, model);
     }
     this.model = sequelize?.models[model.name] as any;
+    for (const hookName in defaultModelOptions.hooks as any) {
+      const hook = (defaultModelOptions.hooks as any)[hookName];
+      this.model.addHook(hookName as any, hook);
+    }
   }
 
   static initializeModels(connection = defaultDatabaseConnection) {
@@ -91,7 +104,7 @@ export default class Database<T extends Model> {
   ) {
     sequelize = getSequelizeInstance(connection);
     if (model.run) {
-      model.run(sequelize);
+      model.run(sequelize, defaultModelOptions);
     } else {
       sequelize?.define(model.name, model.attributes, model.options) as any;
     }
