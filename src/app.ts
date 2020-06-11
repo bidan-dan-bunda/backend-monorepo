@@ -1,3 +1,4 @@
+import createError from 'http-errors';
 import * as HttpStatusCodes from 'http-status-codes';
 import express, { NextFunction, Request, Response } from 'express';
 import cookieParser from 'cookie-parser';
@@ -42,11 +43,15 @@ app.use(
 
 app.use('/api/v1', apiRouterV1);
 
+app.use((req, res, next) => {
+  return next(createError(404));
+});
+
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   return res.status(err.status || 500).json({
-    code: err.code,
-    message: err.message || HttpStatusCodes.getStatusText(err.code),
-    details: err.details,
+    error_code: err.code,
+    error_message: err.message || HttpStatusCodes.getStatusText(err.code),
+    error_details: err.details,
   });
 });
 

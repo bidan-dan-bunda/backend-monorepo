@@ -23,8 +23,8 @@ export interface UserSignUpDetail extends Credential {
 }
 
 export enum AuthErrorCodes {
-  USER_PASSWORD_INVALID_COMBINATION,
-  USERNAME_NOT_AVAILABLE,
+  USER_PASSWORD_INVALID_COMBINATION = 'USER_PASSWORD_INVALID_COMBINATION',
+  USERNAME_NOT_AVAILABLE = 'USERNAME_NOT_AVAILABLE',
 }
 
 export class AuthError extends Error {

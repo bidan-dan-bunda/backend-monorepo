@@ -80,7 +80,6 @@ export interface ApiResponse {
 }
 
 export interface ApiResponseError {
-  code: string;
-  message?: string;
-  details?: any;
+  error_code?: string;
+  error_message?: string;
 }
