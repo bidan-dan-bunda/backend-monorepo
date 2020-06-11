@@ -31,3 +31,4 @@ temp/
 coverage/
 devscripts/
 build/
+google-cloud-credentials.json
