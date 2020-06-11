@@ -17,7 +17,20 @@ export interface UserFields {
   profile_image?: string;
 }
 
-export interface User extends UserFields, Model {}
+export class User extends Model implements UserFields {
+  id!: number;
+  user_type!: string;
+  username!: string;
+  password!: string;
+  name!: string;
+  full_address?: string;
+  address_province?: string;
+  address_regency?: string;
+  address_district?: string;
+  address_village?: string;
+  telephone?: string;
+  profile_image?: string;
+}
 
 export const UserDefinition: ModelDefinition = {
   name: 'user',

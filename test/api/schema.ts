@@ -89,6 +89,7 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
       week: {
         type: 'integer',
         minimum: 0,
+        maximum: 40,
       },
       content: {
         type: 'string',
@@ -108,7 +109,7 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
       },
       url: { type: 'string', faker: 'internet.url' },
       thumbnail_url: 'https://placeimg.com/640/480/any',
-      week: { type: 'integer', minimum: 0 },
+      week: { type: 'integer', minimum: 0, maximum: 40 },
     },
     required: ['title', 'thumbnail_url', 'week'],
   },

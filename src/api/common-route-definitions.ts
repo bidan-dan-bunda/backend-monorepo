@@ -10,7 +10,7 @@ import { FindOptions } from 'sequelize/types';
 
 export function index(
   db: Database<any>,
-  dbOptions?: any,
+  dbOptions?: FindOptions,
   props?: RouteDefinition
 ): RouteDefinition {
   return {

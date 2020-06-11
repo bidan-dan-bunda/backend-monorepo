@@ -79,6 +79,7 @@
     "express-jwt": "^5.3.3",
     "express-resource": "^1.0.0",
     "express-session": "^1.17.1",
+    "firebase-admin": "^8.12.1",
     "helmet": "^3.22.0",
     "http-errors": "^1.7.3",
     "http-status-codes": "^1.4.0",
