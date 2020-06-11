@@ -32,7 +32,8 @@ export const showTokens: RouteDefinition = {
   method: 'get',
   load(req, locals, res) {
     return tokenDb.load({
-      where: { pus_id: req.params.id, attributes: { exclude: ['created_at'] } },
+      where: { pus_id: req.params.id },
+      attributes: { exclude: ['created_at'] },
     });
   },
 };
