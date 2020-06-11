@@ -10,9 +10,11 @@ const schema = BaseObjectSchema.video;
 
 export const index: RouteDefinition = {
   async load(req, locals, res) {
-    await countPages(db, locals.page.limit, locals);
     const { week } = req.query;
     const opts = { ...locals.page };
+    await countPages(db, locals.page.limit, locals, {
+      where: week ? { week: week as any } : undefined,
+    });
     if (week) {
       opts.where = {
         week,
