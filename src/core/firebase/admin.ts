@@ -6,7 +6,9 @@ const GOOGLE_APPLICATION_CREDENTIALS = getConfig(
 );
 
 admin.initializeApp({
-  credential: admin.credential.cert(GOOGLE_APPLICATION_CREDENTIALS),
+  credential: admin.credential.cert(
+    GOOGLE_APPLICATION_CREDENTIALS.replace(/\\n/g, '\n')
+  ),
 });
 
 export const firestore = admin.firestore();
