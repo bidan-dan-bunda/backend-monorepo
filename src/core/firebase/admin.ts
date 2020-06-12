@@ -1,3 +1,4 @@
+import { IS_HEROKU } from './../../constants';
 import * as admin from 'firebase-admin';
 import { getConfig } from '../../config';
 
@@ -7,7 +8,9 @@ const GOOGLE_APPLICATION_CREDENTIALS = getConfig(
 
 admin.initializeApp({
   credential: admin.credential.cert(
-    GOOGLE_APPLICATION_CREDENTIALS.replace(/\\n/g, '\n')
+    IS_HEROKU
+      ? JSON.parse(GOOGLE_APPLICATION_CREDENTIALS)
+      : GOOGLE_APPLICATION_CREDENTIALS
   ),
 });
 
