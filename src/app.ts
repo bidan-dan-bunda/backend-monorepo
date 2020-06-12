@@ -30,13 +30,13 @@ app.use(cookieParser());
 app.use(session);
 
 (authenticateV1 as any).unless = unless;
-
 app.use(
   (authenticateV1 as any).unless({
     path: [
       { url: '/api/v1/auth/signin', methods: ['POST'] },
       { url: '/api/v1/auth/signup', methods: ['POST'] },
       { url: '/api/v1/auth/signout', methods: ['POST'] },
+      { url: /api\/v1\/puskesmas-tokens\/[a-zA-Z0-9]*/, methods: ['GET'] },
     ],
   })
 );
