@@ -20,36 +20,46 @@ function middleware(req: Request, res: Response, next: NextFunction) {
 export const chats: RouteDefinition = {
   route: '/',
   method: 'get',
-  middleware,
+  middleware: [
+    middleware,
+    (req, res, next) => {
+      const queryOptions = {
+        ...res.locals.page,
+        where: {
+          sender_id: req.session?.user.id,
+        },
+        order: [['timestamp', 'DESC']],
+        attributes: { exclude: ['message'] },
+      };
+      res.locals.queryOptions = queryOptions;
+      return countPages(db, queryOptions)(req, res, next);
+    },
+  ],
   async load(req, locals) {
-    const queryOptions = {
-      ...locals.page,
-      where: {
-        sender_id: req.session?.user.id,
-      },
-      order: [['timestamp', 'DESC']],
-      attributes: { exclude: ['message'] },
-    };
-    await countPages(db, locals.page.limit, locals, queryOptions);
-    return db.load(queryOptions);
+    return db.load(locals.queryOptions);
   },
 };
 
 export const chatsByTargetId: RouteDefinition = {
   route: '/:targetId(\\d+)',
   method: 'get',
-  middleware,
+  middleware: [
+    middleware,
+    async (req, res, next) => {
+      const queryOptions = {
+        ...res.locals.page,
+        where: {
+          sender_id: req.session?.user.id,
+        },
+        order: [['timestamp', 'DESC']],
+        attributes: { exclude: ['message'] },
+      };
+      res.locals.queryOptions = queryOptions;
+      return countPages(db, queryOptions)(req, res, next);
+    },
+  ],
   async load(req, locals) {
-    const queryOptions = {
-      ...locals.page,
-      where: {
-        sender_id: req.session?.user.id,
-        target_id: req.params.targetId,
-      },
-      order: [['timestamp', 'DESC']],
-    };
-    await countPages(db, locals.page.limit, locals, queryOptions);
-    return db.load(queryOptions);
+    return db.load(locals.queryOptions);
   },
 };
 

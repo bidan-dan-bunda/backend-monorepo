@@ -8,6 +8,7 @@ import {
 import { ObjectSchemaForGenerator, ResponseObjectSchema } from './schema';
 import jsf from 'json-schema-faker';
 import axios, { AxiosRequestConfig, AxiosPromise } from 'axios';
+import delay from 'delay';
 
 // axios requests
 axios.defaults.validateStatus = axiosConfigDefaults.validateStatus;
@@ -130,4 +131,23 @@ export async function signup(user: any) {
     method: 'post',
     body: user,
   });
+}
+
+// get puskesmas token
+export async function createPuskesmasAndGetTokens() {
+  const puskesmasSchema = getSchemaForGenerator('puskesmas');
+  const puskesmas = generateData(puskesmasSchema);
+  const res = await reqToResourceUrl({
+    resource: 'puskesmas',
+    body: puskesmas,
+  });
+  await delay(2000);
+  const puskesmasId = res.data.data.id;
+  const fetchTokensRes = await reqToResourceUrl({
+    resource: 'puskesmas',
+    urlPostfix: puskesmasId + '/tokens',
+    method: 'get',
+  });
+  const token = fetchTokensRes.data.data[0];
+  return token.token;
 }

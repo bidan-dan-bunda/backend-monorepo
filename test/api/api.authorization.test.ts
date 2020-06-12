@@ -1,4 +1,4 @@
-import { allMethodsResources } from './constants';
+import { allMethodsResources, resources } from './constants';
 import {
   getSchemaForGenerator,
   generateData,
@@ -8,6 +8,8 @@ import {
   signup,
   authActionUrl,
   reqWithSessionCookies,
+  reqWithAuthorization,
+  createPuskesmasAndGetTokens,
 } from './utils';
 
 describe('authorization', () => {
@@ -150,6 +152,9 @@ describe('authorization', () => {
     let userId: number;
     let cookie = '';
     beforeEach(async () => {
+      if (userData.user_type == 'b') {
+        userData.puskesmas_token = await createPuskesmasAndGetTokens();
+      }
       await signup(userData);
       const loginRes = await req({
         url: authActionUrl('signin'),

@@ -1,3 +1,5 @@
+import { Request, Response, NextFunction } from 'express';
+import createError from 'http-errors';
 import { isAdmin } from './../../../auth/middleware';
 import {
   PuskesmasToken,
@@ -15,6 +17,7 @@ import {
   generateAccessTokens,
   storeAccessTokens,
 } from '../../../core/pusksesmas-token';
+import { toArray } from '../../../utils';
 
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
 const schema = BaseObjectSchema.puskesmas;
@@ -25,6 +28,23 @@ const tokenDb = new Database<PuskesmasToken>(
 );
 
 export const show = commonRoutes.show(db);
+
+export const index: RouteDefinition = commonRoutes.index(
+  tokenDb,
+  (req) => ({
+    where: { token: req.query.token as any },
+    include: [{ model: Puskesmas, as: 'puskesmas' }],
+  }),
+  (props) => {
+    const middleware = toArray(props.middleware) || [];
+    const additionalMiddleware = (
+      req: Request,
+      res: Response,
+      next: NextFunction
+    ) => (req.query.token ? next() : next(createError(404)));
+    return { middleware: [additionalMiddleware, ...middleware] };
+  }
+);
 
 export const showTokens: RouteDefinition = {
   route: '/:id/tokens',

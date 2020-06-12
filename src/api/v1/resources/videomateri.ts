@@ -12,21 +12,21 @@ const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 const schema = BaseObjectSchema.videomateri;
 
 export const index: RouteDefinition = {
-  async load(req, locals, res) {
+  middleware: (req, res, next) => {
     const { week } = req.query;
-    const opts = { ...locals.page };
-    await countPages(db, locals.page.limit, locals, {
-      where: week ? { week: week as any } : undefined,
-    });
+    const opts = {
+      ...res.locals.page,
+    };
     if (week) {
-      await countPages(db, locals.page.limit, locals, {
-        where: { week: week as any },
-      });
       opts.where = {
         week,
       };
     }
-    return db.load(opts);
+    res.locals.dbOptions = opts;
+    return countPages(db, opts)(req, res, next);
+  },
+  async load(req, locals, res) {
+    return db.load(locals.dbOptions || locals.page);
   },
 };
 

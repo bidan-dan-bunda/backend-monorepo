@@ -9,6 +9,7 @@ import * as videoRouter from './resources/video';
 import * as devicesRouter from './resources/devicetokens';
 import * as chatRouter from './resources/chat';
 import * as puskesmasTokenRouter from './resources/puskesmas-token';
+import * as vaccineRouter from './resources/vaccine';
 
 import { createResourceRouter } from '../resource-route';
 import { paging } from '../middleware';
@@ -31,5 +32,6 @@ apiRouter.use('/videos', createResourceRouter(videoRouter));
 apiRouter.use('/devices', createResourceRouter(devicesRouter));
 apiRouter.use('/chats', createResourceRouter(chatRouter));
 apiRouter.use('/puskesmas-tokens', createResourceRouter(puskesmasTokenRouter));
+apiRouter.use('/vaccines', createResourceRouter(vaccineRouter));
 
 export default apiRouter;

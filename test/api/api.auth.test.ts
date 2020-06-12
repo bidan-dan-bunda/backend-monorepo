@@ -6,6 +6,8 @@ import {
   req,
   authActionUrl,
   reqWithSessionCookies,
+  reqToResourceUrl,
+  createPuskesmasAndGetTokens,
 } from './utils';
 import { axiosConfigDefaults, apiUrl } from './constants';
 import axios from 'axios';
@@ -40,6 +42,17 @@ describe('authentication', () => {
     const cookies: any = {};
     const schema = getSchemaForGenerator('users');
     const user1 = generateData(schema);
+    const user2 = generateData(schema);
+    const user3 = generateData(schema);
+
+    beforeAll(async () => {
+      const users = [user1, user2, user3];
+      for (const user of users) {
+        if (user.user_type == 'b') {
+          user.puskesmas_token = await createPuskesmasAndGetTokens();
+        }
+      }
+    });
 
     test('should register new user', async () => {
       const res = await req({
@@ -53,7 +66,6 @@ describe('authentication', () => {
     });
 
     test('should reject registering new user when logged in', async () => {
-      const user3 = generateData(schema);
       const res = await reqWithSessionCookies({
         cookie: cookies[user1.username],
         url: authActionUrl('signup'),
@@ -87,7 +99,6 @@ describe('authentication', () => {
     });
 
     test('should reject login correctly with correct credential', async () => {
-      const user2 = generateData(schema);
       const res = await req({
         url: authActionUrl('signin'),
         method: 'post',

@@ -1,6 +1,6 @@
 import { ObjectSchema } from '@hapi/joi';
 import { DEFAULT_UPLOAD_PATH } from './../constants';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { MAX_UPLOAD_FILE_SIZE } from './constants';
@@ -24,12 +24,11 @@ export function createMulterMiddleware(destLastPart: string) {
   });
 }
 
-export async function countPages(
-  db: Database<any>,
-  pageSize: number,
-  locals: any,
-  countOptions?: CountOptions
-) {
-  const count = await db.model.count(countOptions);
-  locals.page.pages = Math.ceil(count / pageSize);
+export function countPages(db: Database<any>, countOptions?: CountOptions) {
+  return async function (req: Request, res: Response, next: NextFunction) {
+    const count = await db.model.count(countOptions);
+    const pageSize = res.locals.page.limit;
+    res.locals.page.pages = Math.ceil(count / pageSize);
+    return next();
+  };
 }

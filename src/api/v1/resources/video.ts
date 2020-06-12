@@ -9,18 +9,21 @@ const db = new Database<Video>(VideoDefinition, undefined);
 const schema = BaseObjectSchema.video;
 
 export const index: RouteDefinition = {
-  async load(req, locals, res) {
+  middleware: (req, res, next) => {
     const { week } = req.query;
-    const opts = { ...locals.page };
-    await countPages(db, locals.page.limit, locals, {
-      where: week ? { week: week as any } : undefined,
-    });
+    const opts = {
+      ...res.locals.page,
+    };
     if (week) {
       opts.where = {
         week,
       };
     }
-    return db.load(opts);
+    res.locals.dbOptions = opts;
+    return countPages(db, opts)(req, res, next);
+  },
+  async load(req, locals, res) {
+    return db.load(locals.dbOptions || locals.page);
   },
 };
 

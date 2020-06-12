@@ -11,6 +11,7 @@ import path from 'path';
 import { upload } from '../fileupload';
 import { UploadApiResponse } from 'cloudinary';
 import * as HttpStatusCodes from 'http-status-codes';
+import { toArray } from '../utils';
 
 const mapActionsToMethods: { [action: string]: string } = {
   index: 'get',
@@ -57,13 +58,6 @@ export interface RouteDefinition {
 }
 
 export type Route = RouteDefinition | RequestHandler;
-
-function toArray(thing: any) {
-  if (!thing || Array.isArray(thing)) {
-    return thing;
-  }
-  return [thing];
-}
 
 function createUploadHandler(uploadDescription: UploadDescription) {
   return async function (req: Request, res: Response) {
