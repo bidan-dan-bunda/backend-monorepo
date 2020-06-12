@@ -30,6 +30,7 @@ export class User extends Model implements UserFields {
   address_village?: string;
   telephone?: string;
   profile_image?: string;
+  pus_id?: number;
 }
 
 export const UserDefinition: ModelDefinition = {
