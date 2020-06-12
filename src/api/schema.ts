@@ -23,6 +23,14 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
     address_district: Joi.string().allow(null),
   }),
 
+  vaccine: Joi.object({
+    name: Joi.string().required(),
+    description: Joi.string().allow(null),
+    in_stock: Joi.boolean().allow(null),
+    stock: Joi.number().allow(null),
+    pus_id: Joi.number().allow(null),
+  }),
+
   videomateri: Joi.object({
     content: Joi.string().required(),
     week: Joi.number().allow(null),
@@ -61,7 +69,7 @@ export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
     password: Joi.string().required(),
     puskesmas_token: Joi.string().when('user_type', {
       is: 'b',
-      then: Joi.required,
+      then: Joi.required(),
       otherwise: Joi.optional(),
     }),
   }),

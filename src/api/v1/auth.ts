@@ -28,7 +28,11 @@ export const login: RouteDefinition = {
       const ret = await signin({ username, password });
 
       if (req.session) {
-        req.session.user = { id: ret.id, user_type: ret.user_type };
+        req.session.user = {
+          id: ret.id,
+          user_type: ret.user_type,
+          pus_id: ret.pus_id,
+        };
       }
 
       return res.status(200).json({
@@ -57,13 +61,21 @@ export const register: RouteDefinition = {
       const ret = await signup(req.body as UserFields);
 
       if (req.session) {
-        req.session.user = { id: ret.id, user_type: ret.user_type };
+        req.session.user = {
+          id: ret.id,
+          user_type: ret.user_type,
+          pus_id: ret.pus_id,
+        };
       }
 
       if (req.body.puskesmas_token) {
         const puskesmas = await getPuskesmasByToken(req.body.puskesmas_token);
         if (puskesmas) {
           await setUserAddressToPuskesmasAddress(puskesmas, ret as User);
+        } else {
+          return res.status(400).json({
+            message: 'Invalid puskesmas token',
+          });
         }
       }
 
