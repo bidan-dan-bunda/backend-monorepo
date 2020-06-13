@@ -12,8 +12,6 @@ import {
   CreateOptions,
   UpdateOptions,
   DestroyOptions,
-  Options,
-  CountOptions,
 } from 'sequelize';
 
 interface OptionFn<T, U> {
