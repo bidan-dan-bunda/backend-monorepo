@@ -36,7 +36,7 @@ app.use(
       { url: '/api/v1/auth/signin', methods: ['POST'] },
       { url: '/api/v1/auth/signup', methods: ['POST'] },
       { url: '/api/v1/auth/signout', methods: ['POST'] },
-      { url: /api\/v1\/puskesmas-tokens\/[a-zA-Z0-9]*/, methods: ['GET'] },
+      { url: /api\/v1\/puskesmas\/tokens\/[A-Z0-9]+/, methods: ['GET'] },
     ],
   })
 );

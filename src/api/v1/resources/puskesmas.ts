@@ -32,18 +32,10 @@ export const show = commonRoutes.show(db);
 export const index: RouteDefinition = commonRoutes.index(
   tokenDb,
   (req) => ({
-    where: { token: req.query.token as any },
+    where: { token: req.params.token as any },
     include: [{ model: Puskesmas, as: 'puskesmas' }],
   }),
-  (props) => {
-    const middleware = toArray(props.middleware) || [];
-    const additionalMiddleware = (
-      req: Request,
-      res: Response,
-      next: NextFunction
-    ) => (req.query.token ? next() : next(createError(404)));
-    return { middleware: [additionalMiddleware, ...middleware] };
-  }
+  { route: '/tokens/:token' }
 );
 
 export const showTokens: RouteDefinition = {
