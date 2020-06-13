@@ -9,10 +9,11 @@ import { CountOptions } from 'sequelize/types';
 
 export function validateRequest(schema: ObjectSchema) {
   return function (req: Request) {
-    const { error, value } = schema.validate(req.body);
+    const { error, value } = schema.validate(req.body, { convert: true });
     if (error) {
       throw error;
     }
+    req.body = value;
     return null;
   };
 }
