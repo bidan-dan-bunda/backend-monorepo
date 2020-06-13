@@ -21,6 +21,10 @@ const app = express();
 // -> Create REST API security middlewares
 // -> Improve session management
 
+app.get('/ping', (req, res) => {
+  return res.send('pong');
+});
+
 app.use(logger('dev'));
 app.use(helmet());
 app.use(express.json({ limit: '5MB' }));
@@ -37,6 +41,7 @@ app.use(
       { url: '/api/v1/auth/signup', methods: ['POST'] },
       { url: '/api/v1/auth/signout', methods: ['POST'] },
       { url: /api\/v1\/puskesmas\/tokens\/[A-Z0-9]+/, methods: ['GET'] },
+      { url: /api\/v1\/users\/[A-Za-z_0-9.]+/, methods: ['GET'] },
     ],
   })
 );
