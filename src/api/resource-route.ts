@@ -45,7 +45,7 @@ export interface UploadDescription {
 }
 
 export interface RouteDefinition {
-  route?: string;
+  route?: string | RegExp;
   method?: string;
   handler?: RequestHandler;
   middleware?: RequestHandler[] | RequestHandler;
