@@ -13,8 +13,23 @@ const schema = DerivedObjectSchema.user;
 export const show = commonRoutes.show(
   db,
   { attributes: { exclude: ['password'] } },
-  { middleware: userOwns }
+  { route: '/:id(\\d+)' }
 );
+
+export const byUsername = commonRoutes.show(
+  db,
+  { attributes: { exclude: ['password'] } },
+  {
+    route: '/:username([A-Za-z_0-9.]+)',
+    load(req) {
+      return db.model.findOne({
+        where: { username: req.params.username.toLowerCase() },
+        attributes: { exclude: ['password'] },
+      });
+    },
+  }
+);
+
 export const edit = commonRoutes.edit(db, schema, undefined, {
   middleware: userOwns,
 });

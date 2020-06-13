@@ -5,7 +5,11 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   user: Joi.object({
     user_type: Joi.string().valid('b', 'u').required(),
     name: Joi.string().required(),
-    username: Joi.string().required(),
+    username: Joi.string()
+      .pattern(/^[a-z_]+[a-z0-9_.]*[^.]$/)
+      .lowercase()
+      .trim()
+      .required(),
     full_address: Joi.string().allow(null),
     address_province: Joi.string().allow(null),
     address_regency: Joi.string().allow(null),
@@ -66,7 +70,7 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
 
 export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   user: BaseObjectSchema.user.keys({
-    password: Joi.string().required(),
+    password: Joi.string().min(8).required(),
     puskesmas_token: Joi.string().when('user_type', {
       is: 'b',
       then: Joi.required(),

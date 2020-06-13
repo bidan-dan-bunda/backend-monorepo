@@ -40,9 +40,12 @@ export async function authenticateV1(
   return next(createError(401));
 }
 
-export function authorize(compareFn: Function) {
+export function authorize(compareFn?: Function) {
   return async function (req: Request, res: Response, next: NextFunction) {
-    if ((req.user as any)?.admin || compareFn(req)) {
+    if (
+      (req.user as any)?.admin ||
+      (typeof compareFn == 'function' && compareFn(req))
+    ) {
       return next();
     }
 
