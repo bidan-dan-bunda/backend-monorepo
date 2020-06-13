@@ -58,6 +58,8 @@ export function show(
   props?: RouteDefinition
 ): RouteDefinition {
   return {
+    route: '/:id',
+    method: 'get',
     load(req, locals, params) {
       const optionsDb = getDbOptions<FindOptions>(req, dbOptions);
       return db.model.findByPk(params.id, { ...optionsDb });
