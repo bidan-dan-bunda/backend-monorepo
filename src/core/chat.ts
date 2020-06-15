@@ -39,7 +39,7 @@ export async function sendMessageToTarget(chatData: ChatData) {
         message,
       },
       tokens: tokens as string[],
-    });
+    }).catch(err => {});
   }
   const chat = await storeChatToDB({
     sender_id: senderId,
