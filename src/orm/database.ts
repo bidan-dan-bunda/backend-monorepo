@@ -1,3 +1,4 @@
+import { IS_PRODUCTION } from './../constants';
 import {
   Sequelize,
   Model,
@@ -45,6 +46,7 @@ export function getSequelizeInstance({
         acquire: 30000,
         idle: 1000,
       },
+      logging: !IS_PRODUCTION,
     });
   }
   return sequelize;
