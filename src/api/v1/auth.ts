@@ -85,7 +85,7 @@ export const register: RouteDefinition = {
         },
       });
     } catch (err) {
-      return next(createError(400, err));
+      return next(createError(err.httpCode || 400, err));
     }
   },
 };

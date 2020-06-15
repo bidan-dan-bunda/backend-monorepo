@@ -1,3 +1,4 @@
+import * as HttpStatusCodes from 'http-status-codes';
 import { ErrorMessages } from './../api/constants';
 import { User, UserFields, UserDefinition } from '../orm/models/user';
 import Database from '../orm/database';
@@ -28,11 +29,12 @@ export enum AuthErrorCodes {
 }
 
 export class AuthError extends Error {
-  public code: AuthErrorCodes;
-
-  constructor(message: string, authErrorCode: AuthErrorCodes) {
+  constructor(
+    message: string,
+    public authErrorCode: AuthErrorCodes,
+    public httpCode: number = 400
+  ) {
     super(message);
-    this.code = authErrorCode;
   }
 }
 
@@ -60,18 +62,16 @@ export async function signin({ username, password }: Credential) {
   return user;
 }
 
-function validateUserDetail(userDetail: UserSignUpDetail) {}
-
 export async function signup(userDetail: UserSignUpDetail) {
   const user = await userExists(userDetail.username);
   if (user) {
     throw new AuthError(
       ErrorMessages.USERNAME_NOT_AVAILABLE,
-      AuthErrorCodes.USERNAME_NOT_AVAILABLE
+      AuthErrorCodes.USERNAME_NOT_AVAILABLE,
+      HttpStatusCodes.CONFLICT
     );
   }
 
-  validateUserDetail(userDetail);
   userDetail.password = await hash(userDetail.password);
 
   return await userDb.model.create(userDetail);
