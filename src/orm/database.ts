@@ -112,6 +112,7 @@ export default class Database<T extends Model> {
   }
 
   async load(options?: FindOptions) {
+    const t = await sequelize?.transaction({ autocommit: false });
     return await this.model.findAll(options);
   }
 

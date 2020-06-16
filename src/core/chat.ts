@@ -1,3 +1,4 @@
+import { ChatTopic, ChatTopicDefinition } from './../orm/models/chattopic';
 import { messaging } from './firebase/admin';
 import {
   DeviceToken,
@@ -5,9 +6,11 @@ import {
 } from './../orm/models/devicetokens';
 import { Chat, ChatDefinition, ChatFields } from './../orm/models/chat';
 import Database from '../orm/database';
+import { nanoid } from 'nanoid';
 
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 const chatDb = new Database<Chat>(ChatDefinition);
+const chatTopicDb = new Database<ChatTopic>(ChatTopicDefinition);
 
 export async function isUserDeviceTokenExist(userId: number) {
   const tokens = await deviceTokenDb.load({ where: { user_id: userId } });
@@ -33,13 +36,15 @@ export async function sendMessageToTarget(chatData: ChatData) {
   let tokens: string[] | null;
   if ((tokens = await isUserDeviceTokenExist(targetId))) {
     tokensExist = true;
-    messaging.sendMulticast({
-      data: {
-        senderId: senderId.toString(),
-        message,
-      },
-      tokens: tokens as string[],
-    }).catch(err => {});
+    messaging
+      .sendMulticast({
+        data: {
+          senderId: senderId.toString(),
+          message,
+        },
+        tokens: tokens as string[],
+      })
+      .catch((err) => {});
   }
   const chat = await storeChatToDB({
     sender_id: senderId,
@@ -48,4 +53,16 @@ export async function sendMessageToTarget(chatData: ChatData) {
     is_sent: tokensExist,
   });
   return chat;
+}
+
+export function createTopic() {
+  return nanoid();
+}
+
+export async function storeTopicId(pusId: number, topic: string) {
+  return await chatTopicDb.create({ topic, pus_id: pusId });
+}
+
+export function subscribeDevicesToTopic(tokens: string[], topic: string) {
+  return messaging.subscribeToTopic(tokens, topic);
 }

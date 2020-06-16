@@ -66,6 +66,7 @@ export const chatsByTargetId: RouteDefinition = {
 const sendChatRequestSchema = Joi.object({
   message: Joi.string().required(),
 });
+
 export const sendChatToTarget: RouteDefinition = {
   route: '/:targetId(\\d+)',
   method: 'post',

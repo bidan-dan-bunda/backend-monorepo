@@ -53,6 +53,16 @@ export function authorize(compareFn?: Function) {
   };
 }
 
+export function validRoute(compareFn: Function) {
+  return async function (req: Request, res: Response, next: NextFunction) {
+    if (compareFn(req)) {
+      return next();
+    }
+
+    return next(createError(400));
+  };
+}
+
 // compare functions
 export function isUserType(userType: string) {
   return function (req: Request) {
@@ -69,6 +79,12 @@ export function isOwningUser(path: string) {
 export function isAdminFn() {
   return function (req: Request) {
     return (req.user as any)?.admin;
+  };
+}
+
+export function isUser() {
+  return function (req: Request) {
+    return !!req.session?.user.id;
   };
 }
 

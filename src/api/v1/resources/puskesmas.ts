@@ -18,6 +18,8 @@ import {
   storeAccessTokens,
 } from '../../../core/pusksesmas-token';
 import { toArray } from '../../../utils';
+import { createTopic, storeTopicId } from '../../../core/chat';
+import { reportError } from '../../../error';
 
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
 const schema = BaseObjectSchema.puskesmas;
@@ -55,7 +57,9 @@ export const create = commonRoutes.create(db, schema, undefined, {
     const ret = await db.create(req.body);
     const pusId = ret.id;
     const tokens = generateAccessTokens(3);
-    storeAccessTokens(pusId, tokens);
+    storeAccessTokens(pusId, tokens).catch(reportError);
+    const chatTopic = createTopic();
+    storeTopicId(pusId, chatTopic).catch(reportError);
     return ret;
   },
 });

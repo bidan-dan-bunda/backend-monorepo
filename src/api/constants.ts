@@ -5,6 +5,8 @@ export const ErrorMessages = {
   USERNAME_NOT_AVAILABLE: 'Username unavailable',
   PASSWORD_DOES_NOT_MATCH_CRITERIA: 'Password does not match criteria',
   LOGOUT_REQUIRED: 'Logout required',
+
+  USER_HAS_NO_PUSKESMAS: 'USER_HAS_NO_PUSKESMAS',
 };
 
 export const NonErrorMessages = {
