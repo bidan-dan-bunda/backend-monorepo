@@ -18,8 +18,9 @@ export const DeviceTokenDefinition: ModelDefinition = {
       autoIncrement: true,
     },
     token: {
-      type: DataTypes.STRING(1024),
+      type: DataTypes.STRING(512),
       allowNull: false,
+      unique: true,
     },
     user_id: {
       type: DataTypes.INTEGER,

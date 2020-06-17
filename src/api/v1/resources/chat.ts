@@ -7,21 +7,15 @@ import Database from '../../../orm/database';
 import { countPages, validateRequest } from '../../common';
 import { sendMessageToTarget } from '../../../core/chat';
 import Joi from '@hapi/joi';
+import { validRoute, isUser } from '../../../auth/middleware';
 
 const db = new Database<Chat>(ChatDefinition);
-
-function middleware(req: Request, res: Response, next: NextFunction) {
-  if (!req.session?.user?.id) {
-    return next(createError(400));
-  }
-  return next();
-}
 
 export const chats: RouteDefinition = {
   route: '/',
   method: 'get',
   middleware: [
-    middleware,
+    validRoute(isUser()),
     (req, res, next) => {
       const queryOptions = {
         ...res.locals.page,
@@ -44,7 +38,7 @@ export const chatsByTargetId: RouteDefinition = {
   route: '/:targetId(\\d+)',
   method: 'get',
   middleware: [
-    middleware,
+    validRoute(isUser()),
     async (req, res, next) => {
       const queryOptions = {
         ...res.locals.page,
@@ -71,7 +65,7 @@ export const sendChatToTarget: RouteDefinition = {
   route: '/:targetId(\\d+)',
   method: 'post',
   validateRequest: validateRequest(sendChatRequestSchema),
-  middleware,
+  middleware: validRoute(isUser()),
   async create(req, locals) {
     return await sendMessageToTarget({
       senderId: req.session?.user.id,

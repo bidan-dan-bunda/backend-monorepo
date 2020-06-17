@@ -6,43 +6,36 @@ import createError from 'http-errors';
 import { RouteDefinition } from './../../resource-route';
 import Joi from '@hapi/joi';
 import { validateRequest } from '../../common';
-import Database from '../../../orm/database';
+import Database, { getSequelizeInstance } from '../../../orm/database';
+import { validRoute, isUser } from '../../../auth/middleware';
+import { Op } from 'sequelize/types';
+import sequelize from 'sequelize';
 
 const db = new Database<DeviceToken>(DeviceTokenDefinition);
 
 const registerTokenRequestSchema = Joi.object({
   device_token: Joi.string().required(),
-  user_id: Joi.number().required(),
 });
 
 // endpoint for registering device registration tokens
 export const registerToken: RouteDefinition = {
   route: '/tokens',
   method: 'post',
+  middleware: validRoute(isUser()),
   validateRequest: validateRequest(registerTokenRequestSchema),
-  handler(req, res, next) {
-    if ((req.user as any)?.admin) {
-      return next(
-        createError(400, {
-          message: 'Admin cannot register device registration token',
-        })
-      );
-    }
-
+  create(req, res, next) {
     const { device_token } = req.body;
-    const userId = req.session?.user.id;
-    db.create({ token: device_token, user_id: userId });
-    return res.status(202).json({ message: 'Accepted' });
-  },
-};
-
-export const checkIfTokenIsRegistered: RouteDefinition = {
-  route: '/tokens/:token',
-  method: 'get',
-  load(req, res, next) {
-    return db.model.findOne({
-      where: { token: req.params.token },
-    });
+    const user_id = req.session?.user.id;
+    const sequelize = getSequelizeInstance();
+    return sequelize.query(
+      'INSERT INTO fb_device_tokens (token, user_id) VALUES(SHA2(:device_token, 256), :user_id)',
+      {
+        replacements: {
+          device_token,
+          user_id,
+        },
+      }
+    );
   },
 };
 
