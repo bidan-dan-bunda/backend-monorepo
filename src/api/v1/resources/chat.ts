@@ -1,3 +1,4 @@
+import { UserDefinition, User } from './../../../orm/models/user';
 import { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
 import { RouteDefinition } from './../../resource-route';
@@ -10,6 +11,7 @@ import Joi from '@hapi/joi';
 import { validRoute, isUser } from '../../../auth/middleware';
 
 const db = new Database<Chat>(ChatDefinition);
+const userDb = new Database<User>(UserDefinition);
 
 export const chats: RouteDefinition = {
   route: '/',
@@ -66,8 +68,13 @@ export const sendChatToTarget: RouteDefinition = {
   validateRequest: validateRequest(sendChatRequestSchema),
   middleware: validRoute(isUser()),
   async create(req, locals) {
+    const sender_id = req.session?.user.id;
+    const user = (await userDb.model.findOne({
+      where: { id: sender_id },
+    })) as User;
     return await sendMessageToTarget({
-      senderId: req.session?.user.id,
+      senderId: sender_id,
+      senderName: user.name,
       targetId: Number.parseInt(req.params.targetId),
       message: req.body.message,
     });

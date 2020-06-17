@@ -1,3 +1,4 @@
+import { User, UserDefinition } from './../../../orm/models/user';
 import {
   ChatGroup,
   ChatGroupDefinition,
@@ -25,6 +26,7 @@ import Joi from '@hapi/joi';
 const chatTopicDb = new Database<ChatTopic>(ChatTopicDefinition);
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 const chatGroupDb = new Database<ChatGroup>(ChatGroupDefinition);
+const userDb = new Database<User>(UserDefinition);
 
 function hasJoinedPuskesmas(req: Request, res: Response, next: NextFunction) {
   if (req.session?.user.pus_id) {
@@ -75,9 +77,13 @@ export const send: RouteDefinition = {
       where: { pus_id },
       attributes: ['topic'],
     });
+    const user = (await userDb.model.findOne({
+      where: { id: sender_id },
+    })) as User;
     if (topic) {
       sendToGroup(topic.topic, {
         senderId: sender_id,
+        senderName: user.name,
         pusId: pus_id,
         message: req.body.message,
       });

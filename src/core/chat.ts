@@ -22,6 +22,7 @@ export async function isUserDeviceTokenExist(userId: number) {
 
 interface ChatData {
   senderId: number;
+  senderName: string;
   targetId: number;
   message: string;
 }
@@ -31,7 +32,7 @@ export async function storeChatToDB(chatData: any) {
 }
 
 export async function sendMessageToTarget(chatData: ChatData) {
-  const { senderId, message, targetId } = chatData;
+  const { senderId, message, targetId, senderName } = chatData;
   let tokensExist = false;
   let tokens: string[] | null;
   if ((tokens = await isUserDeviceTokenExist(targetId))) {
@@ -44,7 +45,10 @@ export async function sendMessageToTarget(chatData: ChatData) {
         },
         data: {
           senderId: senderId.toString(),
+          senderName,
+          timestamp: new Date().getTime().toString(),
           message,
+          type: 'emergency',
         },
         tokens: tokens as string[],
       })
@@ -73,6 +77,7 @@ export function subscribeDevicesToTopic(tokens: string[], topic: string) {
 
 interface GroupChatData {
   senderId: number;
+  senderName: string;
   pusId: number;
   message: string;
 }
@@ -85,8 +90,11 @@ export function sendToGroup(topic: string, data: GroupChatData) {
     },
     data: {
       senderId: data.senderId.toString(),
+      senderName: data.senderName,
+      timestamp: new Date().getTime().toString(),
       pusId: data.pusId.toString(),
       message: data.message,
+      type: 'group',
     },
     topic,
   });
