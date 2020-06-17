@@ -1,5 +1,5 @@
 import { ModelDefinition } from './../database';
-import { Model, DataTypes } from 'sequelize';
+import sequelize, { Model, DataTypes } from 'sequelize';
 
 export interface ChatGroupFields {
   sender_id: number;
@@ -29,8 +29,9 @@ export const ChatGroupDefinition: ModelDefinition = {
       allowNull: false,
     },
     timestamp: {
-      type: DataTypes.DATE,
+      type: DataTypes.BIGINT,
       allowNull: false,
+      defaultValue: sequelize.literal('UNIX_TIMESTAMP()'),
     },
   },
   options: {

@@ -1,5 +1,6 @@
 import { ModelDefinition } from './../database';
 import { Model, DataTypes } from 'sequelize';
+import sequelize from 'sequelize';
 
 export interface ChatFields {
   sender_id: number;
@@ -27,8 +28,9 @@ export const ChatDefinition: ModelDefinition = {
       allowNull: false,
     },
     timestamp: {
-      type: DataTypes.DATE,
+      type: DataTypes.BIGINT,
       allowNull: false,
+      defaultValue: sequelize.literal('UNIX_TIMESTAMP()'),
     },
     is_sent: {
       type: DataTypes.BOOLEAN,
