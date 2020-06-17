@@ -59,7 +59,9 @@ export function validRoute(compareFn: Function) {
       return next();
     }
 
-    return next(createError(400));
+    return next(
+      createError(400, { message: 'User is not able to request to this route' })
+    );
   };
 }
 

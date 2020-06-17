@@ -38,6 +38,10 @@ export async function sendMessageToTarget(chatData: ChatData) {
     tokensExist = true;
     messaging
       .sendMulticast({
+        notification: {
+          title: senderId.toString(),
+          body: message,
+        },
         data: {
           senderId: senderId.toString(),
           message,
@@ -65,4 +69,25 @@ export async function storeTopicId(pusId: number, topic: string) {
 
 export function subscribeDevicesToTopic(tokens: string[], topic: string) {
   return messaging.subscribeToTopic(tokens, topic);
+}
+
+interface GroupChatData {
+  senderId: number;
+  pusId: number;
+  message: string;
+}
+
+export function sendToGroup(topic: string, data: GroupChatData) {
+  return messaging.send({
+    notification: {
+      title: data.senderId.toString(),
+      body: data.message,
+    },
+    data: {
+      senderId: data.senderId.toString(),
+      pusId: data.pusId.toString(),
+      message: data.message,
+    },
+    topic,
+  });
 }

@@ -46,7 +46,6 @@ export const chatsByTargetId: RouteDefinition = {
           sender_id: req.session?.user.id,
         },
         order: [['timestamp', 'DESC']],
-        attributes: { exclude: ['message'] },
       };
       res.locals.queryOptions = queryOptions;
       return countPages(db, queryOptions)(req, res, next);
