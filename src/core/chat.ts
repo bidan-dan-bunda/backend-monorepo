@@ -56,7 +56,7 @@ export async function sendMessageToTarget(chatData: ChatData) {
 }
 
 export function createTopic() {
-  return nanoid();
+  return nanoid(15);
 }
 
 export async function storeTopicId(pusId: number, topic: string) {

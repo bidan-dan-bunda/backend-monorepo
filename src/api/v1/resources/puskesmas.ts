@@ -1,3 +1,4 @@
+import { User, UserDefinition } from './../../../orm/models/user';
 import { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
 import { isAdmin } from './../../../auth/middleware';
@@ -21,6 +22,7 @@ import { toArray } from '../../../utils';
 import { createTopic, storeTopicId } from '../../../core/chat';
 import { reportError } from '../../../error';
 
+const userDb = new Database<User>(UserDefinition);
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
 const schema = BaseObjectSchema.puskesmas;
 
@@ -65,6 +67,17 @@ export const create = commonRoutes.create(db, schema, undefined, {
 });
 export const edit = commonRoutes.edit(db, schema);
 export const destroy = commonRoutes.destroy(db);
+
+export const bidans: RouteDefinition = {
+  route: '/:id/bidan',
+  method: 'get',
+  load(req) {
+    return userDb.load({
+      where: { user_type: 'b', pus_id: req.params.id },
+      attributes: ['id', 'name', 'telephone', 'profile_image', 'pus_id'],
+    });
+  },
+};
 
 const destLastPart = 'puskesmas_profile_images';
 export const upload = commonRoutes.upload({

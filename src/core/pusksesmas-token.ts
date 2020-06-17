@@ -41,5 +41,6 @@ export async function setUserAddressToPuskesmasAddress(
   user.address_province = puskesmas.address_province;
   user.address_regency = puskesmas.address_regency;
   user.address_district = puskesmas.address_district;
+  user.pus_id = puskesmas.id;
   return await user.save();
 }
