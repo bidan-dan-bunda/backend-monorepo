@@ -17,7 +17,7 @@ import createError from 'http-errors';
 import { Request, Response, NextFunction } from 'express';
 import { RouteDefinition } from './../../resource-route';
 import { subscribeDevicesToTopic, sendToGroup } from '../../../core/chat';
-import { authorize, isUser, validRoute } from '../../../auth/middleware';
+import { isUser, validRoute } from '../../../auth/middleware';
 import Database from '../../../orm/database';
 import { reportError } from '../../../error';
 import { validateRequest, countPages } from '../../common';
@@ -38,7 +38,7 @@ function hasJoinedPuskesmas(req: Request, res: Response, next: NextFunction) {
 export const join: RouteDefinition = {
   route: '/join',
   middleware: [validRoute(isUser()), hasJoinedPuskesmas],
-  async handler(req, res) {
+  async handler(req, res, next) {
     const userId = req.session?.user.id;
     const pusId = req.session?.user.pus_id;
     const topic = await chatTopicDb.model.findOne({
@@ -52,6 +52,11 @@ export const join: RouteDefinition = {
           attributes: ['token'],
         })
       ).map((deviceToken) => deviceToken.token);
+      if (!userDeviceTokens.length) {
+        return next(
+          createError(400, { message: 'User has no device tokens registered' })
+        );
+      }
       subscribeDevicesToTopic(userDeviceTokens, topic.topic).catch(reportError);
       return res.status(HttpStatusCodes.ACCEPTED).json({
         message: HttpStatusCodes.getStatusText(HttpStatusCodes.ACCEPTED),
