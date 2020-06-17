@@ -26,16 +26,7 @@ export const registerToken: RouteDefinition = {
   create(req, res, next) {
     const { device_token } = req.body;
     const user_id = req.session?.user.id;
-    const sequelize = getSequelizeInstance();
-    return sequelize.query(
-      'INSERT INTO fb_device_tokens (token, user_id) VALUES(SHA2(:device_token, 256), :user_id)',
-      {
-        replacements: {
-          device_token,
-          user_id,
-        },
-      }
-    );
+    return db.create({ device_token, user_id });
   },
 };
 
