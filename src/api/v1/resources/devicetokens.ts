@@ -26,7 +26,7 @@ export const registerToken: RouteDefinition = {
   create(req, res, next) {
     const { device_token } = req.body;
     const user_id = req.session?.user.id;
-    return db.create({ device_token, user_id });
+    return db.create({ token: device_token, user_id });
   },
 };
 

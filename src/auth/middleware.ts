@@ -84,7 +84,7 @@ export function isAdminFn() {
 
 export function isUser() {
   return function (req: Request) {
-    return !!req.session?.user.id;
+    return !!req.session?.user?.id;
   };
 }
 
