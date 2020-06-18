@@ -99,3 +99,14 @@ export function sendToGroup(topic: string, data: GroupChatData) {
     topic,
   });
 }
+
+export async function setUserDeviceToSubscribePuskesmasChatTopic(
+  pusId: number,
+  deviceToken: string
+) {
+  const topic = await chatTopicDb.model.findOne({ where: { pus_id: pusId } });
+  if (topic) {
+    return subscribeDevicesToTopic([deviceToken], topic.topic);
+  }
+  return null;
+}

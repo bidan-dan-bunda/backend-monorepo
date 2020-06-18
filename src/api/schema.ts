@@ -76,6 +76,7 @@ export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
       then: Joi.required(),
       otherwise: Joi.optional(),
     }),
+    device_token: Joi.string().required(),
   }),
 };
 

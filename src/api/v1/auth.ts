@@ -10,6 +10,14 @@ import {
   setUserAddressToPuskesmasAddress,
   getPuskesmasByToken,
 } from '../../core/pusksesmas-token';
+import { setUserDeviceToSubscribePuskesmasChatTopic } from '../../core/chat';
+import Database from '../../orm/database';
+import {
+  DeviceToken,
+  DeviceTokenDefinition,
+} from '../../orm/models/devicetokens';
+
+const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 
 export const login: RouteDefinition = {
   route: '/signin',
@@ -27,7 +35,7 @@ export const login: RouteDefinition = {
     try {
       const ret = await signin({ username, password });
 
-      if (req.session) {
+      if (req.session && !req.query.no_cookie) {
         req.session.user = {
           id: ret.id,
           user_type: ret.user_type,
@@ -60,7 +68,7 @@ export const register: RouteDefinition = {
     try {
       const ret = await signup(req.body as UserFields);
 
-      if (req.session) {
+      if (req.session && !req.query.no_cookie) {
         req.session.user = {
           id: ret.id,
           user_type: ret.user_type,
@@ -71,7 +79,23 @@ export const register: RouteDefinition = {
       if (req.body.puskesmas_token) {
         const puskesmas = await getPuskesmasByToken(req.body.puskesmas_token);
         if (puskesmas) {
-          await setUserAddressToPuskesmasAddress(puskesmas, ret as User);
+          const tasks = [];
+          tasks.push(setUserAddressToPuskesmasAddress(puskesmas, ret as User));
+          if (req.body.device_token) {
+            tasks.push(
+              setUserDeviceToSubscribePuskesmasChatTopic(
+                puskesmas.id,
+                req.body.device_token
+              )
+            );
+            tasks.push(
+              deviceTokenDb.create({
+                token: req.body.device_token,
+                user_id: ret.id,
+              })
+            );
+          }
+          await tasks;
         } else {
           return res.status(400).json({
             message: 'Invalid puskesmas token',
