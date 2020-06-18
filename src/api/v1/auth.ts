@@ -1,3 +1,4 @@
+import { Puskesmas, PuskesmasDefinition } from './../../orm/models/puskesmas';
 import createError from 'http-errors';
 import { RouteDefinition } from './../resource-route';
 import { User } from './../../orm/models/user';
@@ -16,8 +17,10 @@ import {
   DeviceToken,
   DeviceTokenDefinition,
 } from '../../orm/models/devicetokens';
+import { reportError } from '../../error';
 
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
+const puskesmasDb = new Database<Puskesmas>(PuskesmasDefinition);
 
 export const login: RouteDefinition = {
   route: '/signin',
@@ -41,6 +44,34 @@ export const login: RouteDefinition = {
           user_type: ret.user_type,
           pus_id: ret.pus_id,
         };
+      }
+
+      if (ret.pus_id) {
+        const puskesmas = await puskesmasDb.model.findOne({
+          where: { id: ret.pus_id },
+        });
+        if (puskesmas) {
+          const tasks = [];
+          if (req.body.device_token) {
+            tasks.push(
+              setUserDeviceToSubscribePuskesmasChatTopic(
+                puskesmas.id,
+                req.body.device_token
+              )
+            );
+            tasks.push(
+              deviceTokenDb.create({
+                token: req.body.device_token,
+                user_id: ret.id,
+              })
+            );
+          }
+          try {
+            await tasks;
+          } catch (err) {
+            reportError(err);
+          }
+        }
       }
 
       return res.status(200).json({

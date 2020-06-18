@@ -83,6 +83,7 @@ export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
 export const UserLoginSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required(),
+  device_token: Joi.string().required(),
 });
 
 // array, error, single, no data
