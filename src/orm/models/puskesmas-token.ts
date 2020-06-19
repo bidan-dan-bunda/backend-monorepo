@@ -42,6 +42,7 @@ export const PuskesmasTokenDefinition: ModelDefinition = {
     updatedAt: false,
     freezeTableName: true,
   },
+
   run(sequelize) {
     PuskesmasToken.init(this.attributes, {
       modelName: this.name,
@@ -49,6 +50,7 @@ export const PuskesmasTokenDefinition: ModelDefinition = {
       ...this.options,
     });
   },
+
   runAfter() {
     PuskesmasToken.belongsTo(Puskesmas, {
       foreignKey: 'pus_id',

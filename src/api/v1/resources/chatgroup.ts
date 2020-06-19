@@ -22,6 +22,7 @@ import Database from '../../../orm/database';
 import { reportError } from '../../../error';
 import { validateRequest, countPages } from '../../common';
 import Joi from '@hapi/joi';
+import { FindOptions } from 'sequelize/types';
 
 const chatTopicDb = new Database<ChatTopic>(ChatTopicDefinition);
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
@@ -111,10 +112,15 @@ export const get: RouteDefinition = {
     validRoute(isUser()),
     hasJoinedPuskesmas,
     async (req, res, next) => {
-      const queryOptions = {
+      const queryOptions: FindOptions = {
         ...res.locals.page,
         where: {
           sender_id: req.session?.user.id,
+        },
+        include: {
+          model: User,
+          as: 'sender',
+          attributes: ['name'],
         },
         order: [['timestamp', 'DESC']],
       };

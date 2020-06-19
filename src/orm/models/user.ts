@@ -1,6 +1,6 @@
 import { ModelDefinition } from './../database';
 import { DataTypes } from 'sequelize';
-import { Model, BuildOptions } from 'sequelize';
+import { Model } from 'sequelize';
 
 export interface UserFields {
   id: number;
@@ -81,5 +81,13 @@ export const UserDefinition: ModelDefinition = {
   },
   options: {
     timestamps: false,
+  },
+
+  run(sequelize) {
+    User.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
   },
 };

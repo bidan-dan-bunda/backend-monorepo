@@ -1,5 +1,11 @@
+import { User } from './user';
 import { ModelDefinition } from './../database';
-import sequelize, { Model, DataTypes } from 'sequelize';
+import sequelize, {
+  Model,
+  DataTypes,
+  BelongsToGetAssociationMixin,
+  Association,
+} from 'sequelize';
 
 export interface ChatGroupFields {
   sender_id: number;
@@ -8,7 +14,18 @@ export interface ChatGroupFields {
   timestamp: Date;
 }
 
-export interface ChatGroup extends Model {}
+export class ChatGroup extends Model implements ChatGroupFields {
+  sender_id!: number;
+  pus_id!: number;
+  message!: string;
+  timestamp!: Date;
+
+  getSender!: BelongsToGetAssociationMixin<User>;
+
+  public static associations: {
+    sender: Association<ChatGroup, User>;
+  };
+}
 
 export const ChatGroupDefinition: ModelDefinition = {
   name: 'chatgroup',
@@ -37,5 +54,20 @@ export const ChatGroupDefinition: ModelDefinition = {
   options: {
     createdAt: 'timestamp',
     updatedAt: false,
+  },
+
+  run(sequelize) {
+    ChatGroup.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
+  },
+
+  runAfter() {
+    ChatGroup.belongsTo(User, {
+      foreignKey: 'sender_id',
+      as: 'sender',
+    });
   },
 };
