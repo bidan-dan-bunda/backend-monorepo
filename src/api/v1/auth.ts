@@ -103,7 +103,6 @@ export const register: RouteDefinition = {
         req.session.user = {
           id: ret.id,
           user_type: ret.user_type,
-          pus_id: ret.pus_id,
         };
       }
 
@@ -127,6 +126,9 @@ export const register: RouteDefinition = {
             );
           }
           await tasks;
+          if (req.session?.user) {
+            req.session.user.pus_id = puskesmas.id;
+          }
         } else {
           return res.status(400).json({
             message: 'Invalid puskesmas token',

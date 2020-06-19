@@ -61,8 +61,9 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
       address_district: '1101010',
       address_village: '1101010001',
       pus_id: 1,
+      device_token: 'POAPODPASODAPSODPASODAPSDOAPS',
     },
-    required: ['name', 'username', 'password', 'user_type'],
+    required: ['name', 'username', 'password', 'user_type', 'device_token'],
   },
 
   puskesmas: {
@@ -86,11 +87,11 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
   videomateri: {
     type: 'object',
     properties: {
-      week: {
+      week: 1 /* {
         type: 'integer',
         minimum: 0,
         maximum: 40,
-      },
+      }, */,
       content: {
         type: 'string',
         faker: 'lorem.sentences',
@@ -109,7 +110,8 @@ export const ObjectSchemaForGenerator: { [id: string]: any } = {
       },
       url: { type: 'string', faker: 'internet.url' },
       thumbnail_url: 'https://placeimg.com/640/480/any',
-      week: { type: 'integer', minimum: 0, maximum: 40 },
+      // week: { type: 'integer', minimum: 0, maximum: 40 },
+      week: 1,
     },
     required: ['title', 'thumbnail_url', 'week'],
   },
