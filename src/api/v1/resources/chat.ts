@@ -9,6 +9,7 @@ import { countPages, validateRequest } from '../../common';
 import { sendMessageToTarget } from '../../../core/chat';
 import Joi from '@hapi/joi';
 import { validRoute, isUser } from '../../../auth/middleware';
+import { QueryTypes } from 'sequelize';
 
 const db = new Database<Chat>(ChatDefinition);
 const userDb = new Database<User>(UserDefinition);
@@ -35,7 +36,7 @@ export const chats: RouteDefinition = {
     const sequelize = getSequelizeInstance();
     const query =
       "SELECT users.id as user_id, chats.id as chat_id, users.name as sender_name, chats.message as message FROM users LEFT JOIN chats ON users.id = chats.sender_id WHERE users.user_type = 'b' ORDER BY chats.timestamp DESC;";
-    return sequelize.query(query);
+    return sequelize.query(query, { type: QueryTypes.SELECT });
   },
 };
 
