@@ -42,36 +42,32 @@ export const chats: RouteDefinition = {
           .then(() => {
             return sequelize.query(
               `
-                SELECT 
-                    chats.sender_id AS sender_id,
-                    users.user_type AS sender_user_type,
-                    target.user_type AS target_user_type,
-                    users.name AS sender_name,
-                    chats.id AS chat_id,
-                    chats.target_id AS target_id,
-                    chats.message AS message,
-                    chats.timestamp AS timestamp
-                FROM
-                    users
-                        LEFT JOIN
-                    (SELECT 
-                        *
-                    FROM
-                        chats
-                    WHERE
-                        timestamp = (SELECT 
-                                MAX(timestamp)
-                            FROM
-                                chats AS q1)
-                    GROUP BY target_id) AS chats ON chats.sender_id = users.id
-                        INNER JOIN
-                    (SELECT 
-                        *
-                    FROM
-                        users) AS target ON chats.target_id = target.id
-                WHERE
-                    chats.sender_id = :sender_id AND
-                    target.user_type = 'b';
+              SELECT 
+                  chats.sender_id AS sender_id,
+                  chats.target_id AS target_id,
+                  users.name AS sender_name,
+                  target.name AS target_name,
+                  chats.message AS message,
+                  chats.timestamp AS timestamp
+              FROM
+                  users
+                      LEFT JOIN
+                  (SELECT 
+                      chats.sender_id,
+                          chats.target_id,
+                          chats.timestamp,
+                          chats.message
+                  FROM
+                      chats
+                  INNER JOIN (SELECT 
+                      sender_id, target_id, MAX(timestamp) AS latest
+                  FROM
+                      chats
+                  GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp) AS chats ON chats.sender_id = users.id
+                  INNER JOIN (SELECT * FROM users) as target ON chats.target_id = target.id
+              WHERE
+                  chats.sender_id = 16 AND
+                  target.user_type = 'b';
           `,
               {
                 type: QueryTypes.SELECT,
