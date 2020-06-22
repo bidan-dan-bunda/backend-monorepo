@@ -4,7 +4,7 @@ import createError from 'http-errors';
 import { RouteDefinition } from './../../resource-route';
 import { Chat, ChatDefinition } from './../../../orm/models/chat';
 import * as commonRoutes from '../../common-route-definitions';
-import Database from '../../../orm/database';
+import Database, { getSequelizeInstance } from '../../../orm/database';
 import { countPages, validateRequest } from '../../common';
 import { sendMessageToTarget } from '../../../core/chat';
 import Joi from '@hapi/joi';
@@ -32,7 +32,10 @@ export const chats: RouteDefinition = {
     },
   ],
   async load(req, locals) {
-    return db.load(locals.queryOptions);
+    const sequelize = getSequelizeInstance();
+    const query =
+      "SELECT users.id as user_id, chats.id as chat_id, users.name as sender_name, chats.message as message FROM users LEFT JOIN chats ON users.id = chats.sender_id WHERE users.user_type = 'b' ORDER BY chats.timestamp DESC;";
+    return sequelize.query(query);
   },
 };
 
