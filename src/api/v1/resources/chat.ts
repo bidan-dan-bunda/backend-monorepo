@@ -44,6 +44,7 @@ export const chats: RouteDefinition = {
               `
             SELECT 
                 users.id AS sender_id,
+                users.name AS sender_name,
                 chats.id AS chat_id,
                 chats.message AS message,
                 chats.timestamp AS timestamp
