@@ -34,8 +34,25 @@ export const chats: RouteDefinition = {
   ],
   async load(req, locals) {
     const sequelize = getSequelizeInstance();
-    const query =
-      'SELECT users.id as user_id, chats.id as chat_id, users.name as sender_name, chats.message as message FROM users LEFT JOIN chats ON users.id = chats.sender_id ORDER BY chats.timestamp DESC;';
+    const query = `SET sql_mode = '';
+      SELECT 
+          users.id AS sender_id,
+          chats.id AS chat_id,
+          chats.message AS message,
+          chats.timestamp AS timestamp
+      FROM
+          users
+              LEFT JOIN
+          (SELECT 
+              *
+          FROM
+              chats
+          WHERE
+              timestamp = (SELECT 
+                      MAX(timestamp)
+                  FROM
+                      chats AS q1)
+          GROUP BY sender_id) AS chats ON chats.sender_id = users.id;`;
     return sequelize.query(query, { type: QueryTypes.SELECT });
   },
 };
