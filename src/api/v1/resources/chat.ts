@@ -34,26 +34,46 @@ export const chats: RouteDefinition = {
   ],
   async load(req, locals) {
     const sequelize = getSequelizeInstance();
-    const query = `SET sql_mode = '';
-      SELECT 
-          users.id AS sender_id,
-          chats.id AS chat_id,
-          chats.message AS message,
-          chats.timestamp AS timestamp
-      FROM
-          users
-              LEFT JOIN
-          (SELECT 
-              *
-          FROM
-              chats
-          WHERE
-              timestamp = (SELECT 
-                      MAX(timestamp)
-                  FROM
-                      chats AS q1)
-          GROUP BY sender_id) AS chats ON chats.sender_id = users.id;`;
-    return sequelize.query(query, { type: QueryTypes.SELECT });
+    return new Promise((resolve, reject) => {
+      sequelize.transaction().then((t) => {
+        const opts = { raw: true, transaction: t };
+        return sequelize
+          .query(`SET sql_mode = ''`, opts)
+          .then(() => {
+            return sequelize.query(
+              `
+            SELECT 
+                users.id AS sender_id,
+                chats.id AS chat_id,
+                chats.message AS message,
+                chats.timestamp AS timestamp
+            FROM
+                users
+                    LEFT JOIN
+                (SELECT 
+                    *
+                FROM
+                    chats
+                WHERE
+                    timestamp = (SELECT 
+                            MAX(timestamp)
+                        FROM
+                            chats AS q1)
+                GROUP BY sender_id) AS chats ON chats.sender_id = users.id;
+          `,
+              { type: QueryTypes.SELECT, ...opts }
+            );
+          })
+          .then((res) => {
+            resolve(res);
+            return t.commit();
+          })
+          .catch((err) => {
+            reject(err);
+            return t.rollback();
+          });
+      });
+    });
   },
 };
 
