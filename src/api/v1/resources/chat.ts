@@ -42,27 +42,42 @@ export const chats: RouteDefinition = {
           .then(() => {
             return sequelize.query(
               `
-            SELECT 
-                users.id AS sender_id,
-                users.name AS sender_name,
-                chats.id AS chat_id,
-                chats.message AS message,
-                chats.timestamp AS timestamp
-            FROM
-                users
-                    LEFT JOIN
-                (SELECT 
-                    *
+                SELECT 
+                    chats.sender_id AS sender_id,
+                    users.user_type AS sender_user_type,
+                    target.user_type AS target_user_type,
+                    users.name AS sender_name,
+                    chats.id AS chat_id,
+                    chats.target_id AS target_id,
+                    chats.message AS message,
+                    chats.timestamp AS timestamp
                 FROM
-                    chats
+                    users
+                        LEFT JOIN
+                    (SELECT 
+                        *
+                    FROM
+                        chats
+                    WHERE
+                        timestamp = (SELECT 
+                                MAX(timestamp)
+                            FROM
+                                chats AS q1)
+                    GROUP BY target_id) AS chats ON chats.sender_id = users.id
+                        INNER JOIN
+                    (SELECT 
+                        *
+                    FROM
+                        users) AS target ON chats.target_id = target.id
                 WHERE
-                    timestamp = (SELECT 
-                            MAX(timestamp)
-                        FROM
-                            chats AS q1)
-                GROUP BY sender_id) AS chats ON chats.sender_id = users.id;
+                    chats.sender_id = :sender_id AND
+                    target.user_type = 'b';
           `,
-              { type: QueryTypes.SELECT, ...opts }
+              {
+                type: QueryTypes.SELECT,
+                replacements: { sender_id: req.session?.user.id },
+                ...opts,
+              }
             );
           })
           .then((res) => {
