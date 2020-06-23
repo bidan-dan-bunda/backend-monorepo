@@ -66,7 +66,7 @@ export const chats: RouteDefinition = {
                   GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp) AS chats ON chats.sender_id = users.id
                   INNER JOIN (SELECT * FROM users) as target ON chats.target_id = target.id
               WHERE
-                  chats.sender_id = 16 AND
+                  chats.sender_id = :sender_id AND
                   target.user_type = 'b';
           `,
               {
