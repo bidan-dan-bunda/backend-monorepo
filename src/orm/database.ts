@@ -46,7 +46,6 @@ export function getSequelizeInstance({
         acquire: 30000,
         idle: 1000,
       },
-      logging: !IS_PRODUCTION,
       timezone: '+07:00',
     });
   }
