@@ -48,7 +48,7 @@ export async function sendMessageToTarget(chatData: ChatData) {
           senderName,
           timestamp: new Date().getTime().toString(),
           message,
-          type: 'emergency',
+          type: 'konsultasi',
         },
         tokens: tokens as string[],
       })
