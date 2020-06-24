@@ -99,6 +99,7 @@ export const chatsByTargetId: RouteDefinition = {
         ...res.locals.page,
         where: {
           sender_id: req.session?.user.id,
+          target_id: req.params.targetId
         },
         order: [['timestamp', 'DESC']],
       };
