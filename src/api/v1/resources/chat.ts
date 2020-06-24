@@ -9,7 +9,7 @@ import { countPages, validateRequest } from '../../common';
 import { sendMessageToTarget } from '../../../core/chat';
 import Joi from '@hapi/joi';
 import { validRoute, isUser } from '../../../auth/middleware';
-import { QueryTypes } from 'sequelize';
+import { QueryTypes, Op } from 'sequelize';
 
 const db = new Database<Chat>(ChatDefinition);
 const userDb = new Database<User>(UserDefinition);
@@ -98,8 +98,16 @@ export const chatsByTargetId: RouteDefinition = {
       const queryOptions = {
         ...res.locals.page,
         where: {
-          sender_id: req.session?.user.id,
-          target_id: req.params.targetId
+          [Op.or]: [
+            {
+              sender_id: req.session?.user.id,
+              target_id: req.params.targetId,
+            },
+            {
+              target_id: req.session?.user.id,
+              sender_id: req.params.targetId,
+            },
+          ],
         },
         order: [['timestamp', 'DESC']],
       };
