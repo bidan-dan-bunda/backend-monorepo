@@ -42,21 +42,26 @@ export const chats: RouteDefinition = {
           .then(() => {
             return sequelize.query(
               `
-              SELECT 
-                  chats.sender_id AS sender_id,
-                  chats.target_id AS target_id,
-                  chats.message AS message,
-                  chats.timestamp AS timestamp
+          SELECT 
+              chats.sender_id AS sender_id,
+              sender.name AS sender_name,
+              chats.target_id AS target_id,
+              target.name AS target_name,
+              target.profile_image AS target_profile_image,
+              chats.message AS message,
+              chats.timestamp AS timestamp
+          FROM
+              chats
+                  INNER JOIN
+              (SELECT 
+                  MAX(timestamp) AS latest
               FROM
                   chats
-                      INNER JOIN
-                  (SELECT 
-                      MAX(timestamp) AS latest
-                  FROM
-                      chats
-                  GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp
-              WHERE
-                  sender_id = :sender_id;
+              GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp
+              INNER JOIN users AS sender ON sender.id = chats.sender_id
+              INNER JOIN users AS target ON target.id = chats.target_id
+          WHERE
+              sender_id = :sender_id;
           `,
               {
                 type: QueryTypes.SELECT,
