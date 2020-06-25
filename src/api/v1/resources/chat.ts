@@ -61,7 +61,8 @@ export const chats: RouteDefinition = {
               INNER JOIN users AS sender ON sender.id = chats.sender_id
               INNER JOIN users AS target ON target.id = chats.target_id
           WHERE
-              sender_id = :sender_id;
+              sender_id = :sender_id
+          ORDER BY timestamp DESC;
           `,
               {
                 type: QueryTypes.SELECT,
