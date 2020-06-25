@@ -19,7 +19,7 @@ export const chats: RouteDefinition = {
   method: 'get',
   middleware: [
     validRoute(isUser()),
-    (req, res, next) => {
+    /* (req, res, next) => {
       const queryOptions = {
         ...res.locals.page,
         where: {
@@ -30,7 +30,7 @@ export const chats: RouteDefinition = {
       };
       res.locals.queryOptions = queryOptions;
       return countPages(db, queryOptions)(req, res, next);
-    },
+    }, */
   ],
   async load(req, locals) {
     const sequelize = getSequelizeInstance();
@@ -45,29 +45,18 @@ export const chats: RouteDefinition = {
               SELECT 
                   chats.sender_id AS sender_id,
                   chats.target_id AS target_id,
-                  users.name AS sender_name,
-                  target.name AS target_name,
                   chats.message AS message,
                   chats.timestamp AS timestamp
               FROM
-                  users
-                      LEFT JOIN
+                  chats
+                      INNER JOIN
                   (SELECT 
-                      chats.sender_id,
-                          chats.target_id,
-                          chats.timestamp,
-                          chats.message
+                      MAX(timestamp) AS latest
                   FROM
                       chats
-                  INNER JOIN (SELECT 
-                      sender_id, target_id, MAX(timestamp) AS latest
-                  FROM
-                      chats
-                  GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp) AS chats ON chats.sender_id = users.id
-                  INNER JOIN (SELECT * FROM users) as target ON chats.target_id = target.id
+                  GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp
               WHERE
-                  chats.sender_id = :sender_id AND
-                  target.user_type = 'b';
+                  sender_id = :sender_id;
           `,
               {
                 type: QueryTypes.SELECT,
