@@ -104,6 +104,9 @@ export const chatsByTargetId: RouteDefinition = {
     async (req, res, next) => {
       const participant1 = Number.parseInt(req.params.targetId);
       const participant2 = req.session?.user.id;
+      if (participant1 == participant2) {
+        return next(createError(404, { message: 'Referring to itself' }));
+      }
       const chatRoom = await getChatRoom(participant1, participant2);
       if (!chatRoom) {
         return next(
