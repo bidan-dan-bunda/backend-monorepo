@@ -8,6 +8,10 @@ const debug = d('app:server');
 const server = http.createServer(app);
 server.setTimeout(ms('30m'));
 
+process.on('SIGINT', () => {
+  process.exit();
+});
+
 server.listen(port, () => {
   debug('listening on port %d', port);
 });
