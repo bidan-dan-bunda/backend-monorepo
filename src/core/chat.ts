@@ -54,7 +54,7 @@ export async function sendMessageToTarget(
         data: {
           senderId: senderId.toString(),
           senderName,
-          timestamp: new Date().getTime().toString(),
+          timestamp: (~~(Date.now() / 1000)).toString(),
           message,
           type: 'konsultasi',
         },
@@ -100,7 +100,7 @@ export function sendToGroup(topic: string, data: GroupChatData) {
     data: {
       senderId: data.senderId.toString(),
       senderName: data.senderName,
-      timestamp: new Date().getTime().toString(),
+      timestamp: (~~(Date.now() / 1000)).toString(),
       pusId: data.pusId.toString(),
       message: data.message,
       type: 'group',
