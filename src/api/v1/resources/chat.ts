@@ -1,3 +1,5 @@
+import { isAdmin } from './../../../auth/middleware';
+import { IS_HEROKU } from './../../../constants';
 import { ChatRoom, ChatRoomDefinition } from './../../../orm/models/chatrooms';
 import { UserDefinition, User } from './../../../orm/models/user';
 import { Request, Response, NextFunction } from 'express';
@@ -137,6 +139,9 @@ export const sendChatToTarget: RouteDefinition = {
   async create(req, locals) {
     const sender_id = req.session?.user.id;
     const target_id = Number(req.params.targetId);
+    if (sender_id == target_id) {
+      throw createError(404, { message: 'Referring to itself' });
+    }
     let chatRoom = await getChatRoom(sender_id, target_id);
     if (!chatRoom) {
       chatRoom = await createChatRoom(sender_id, target_id);
@@ -153,5 +158,39 @@ export const sendChatToTarget: RouteDefinition = {
       },
       chatRoom.id
     );
+  },
+};
+
+export const truncate: RouteDefinition = {
+  route: '/truncate',
+  method: 'get',
+  middleware: isAdmin,
+  async handler(req, res, next) {
+    const sequelize = getSequelizeInstance();
+    sequelize
+      .transaction()
+      .then((t) => {
+        const options = { raw: true, transaction: t };
+
+        sequelize
+          .query('SET FOREIGN_KEY_CHECKS = 0', options)
+          .then(() => {
+            return Promise.all([
+              sequelize.query('truncate table chats', options),
+              sequelize.query('truncate table chat_rooms', options),
+              sequelize.query('truncate table chat_members', options),
+            ]);
+          })
+          .then(() => {
+            return sequelize.query('SET FOREIGN_KEY_CHECKS = 1', options);
+          })
+          .then(() => {
+            return t.commit();
+          });
+      })
+      .then(() => {
+        res.json({ message: 'Success truncating tables' });
+      })
+      .catch((err) => next(createError(500, err)));
   },
 };
