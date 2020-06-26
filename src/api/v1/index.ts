@@ -12,6 +12,7 @@ import * as puskesmasTokenRouter from './resources/puskesmas-token';
 import * as vaccineRouter from './resources/vaccine';
 import * as chatGroupRouter from './resources/chatgroup';
 import * as patientRouter from './resources/patient';
+import * as accountRouter from './resources/account';
 
 import { createResourceRouter } from '../resource-route';
 import { paging } from '../middleware';
@@ -28,6 +29,7 @@ apiRouter.use('/auth', createResourceRouter(authRouter));
 apiRouter.use(paging);
 apiRouter.use('/locations', createResourceRouter(locationRouter));
 apiRouter.use('/users', createResourceRouter(userRouter));
+apiRouter.use('/account', createResourceRouter(accountRouter));
 apiRouter.use('/puskesmas', createResourceRouter(puskesmasRouter));
 apiRouter.use('/videomateri', createResourceRouter(videomateriRouter));
 apiRouter.use('/videos', createResourceRouter(videoRouter));
