@@ -1,3 +1,4 @@
+import { ChatRoom, ChatRoomDefinition } from './../../../orm/models/chatrooms';
 import { UserDefinition, User } from './../../../orm/models/user';
 import { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
@@ -6,12 +7,17 @@ import { Chat, ChatDefinition } from './../../../orm/models/chat';
 import * as commonRoutes from '../../common-route-definitions';
 import Database, { getSequelizeInstance } from '../../../orm/database';
 import { countPages, validateRequest } from '../../common';
-import { sendMessageToTarget } from '../../../core/chat';
+import {
+  sendMessageToTarget,
+  getChatRoom,
+  createChatRoom,
+} from '../../../core/chat';
 import Joi from '@hapi/joi';
 import { validRoute, isUser } from '../../../auth/middleware';
 import { QueryTypes, Op } from 'sequelize';
 
 const db = new Database<Chat>(ChatDefinition);
+const chatRoomDb = new Database<ChatRoom>(ChatRoomDefinition);
 const userDb = new Database<User>(UserDefinition);
 
 export const chats: RouteDefinition = {
@@ -42,31 +48,27 @@ export const chats: RouteDefinition = {
           .then(() => {
             return sequelize.query(
               `
-          SELECT 
-              chats.sender_id AS sender_id,
-              sender.name AS sender_name,
-              chats.target_id AS target_id,
-              target.name AS target_name,
-              target.profile_image AS target_profile_image,
-              chats.message AS message,
-              chats.timestamp AS timestamp
+              SELECT 
+              *
           FROM
+              chat_members
+                  INNER JOIN
               chats
                   INNER JOIN
               (SELECT 
                   MAX(timestamp) AS latest
               FROM
                   chats
-              GROUP BY target_id) AS q1 ON q1.latest = chats.timestamp
-              INNER JOIN users AS sender ON sender.id = chats.sender_id
-              INNER JOIN users AS target ON target.id = chats.target_id
+              GROUP BY chatroom_id) AS q1 ON q1.latest = chats.timestamp
+                  AND chats.chatroom_id = chat_members.chatroom_id
           WHERE
-              sender_id = :sender_id
+              user_id = :user_id
           ORDER BY timestamp DESC;
+          
           `,
               {
                 type: QueryTypes.SELECT,
-                replacements: { sender_id: req.session?.user.id },
+                replacements: { user_id: req.session?.user.id },
                 ...opts,
               }
             );
@@ -90,19 +92,19 @@ export const chatsByTargetId: RouteDefinition = {
   middleware: [
     validRoute(isUser()),
     async (req, res, next) => {
+      const participant1 = Number.parseInt(req.params.targetId);
+      const participant2 = req.session?.user.id;
+      const chatRoom = await getChatRoom(participant1, participant2);
+      if (!chatRoom) {
+        return next(
+          createError(404, { message: 'Chat with such target not found' })
+        );
+      }
+
       const queryOptions = {
         ...res.locals.page,
         where: {
-          [Op.or]: [
-            {
-              sender_id: req.session?.user.id,
-              target_id: req.params.targetId,
-            },
-            {
-              target_id: req.session?.user.id,
-              sender_id: req.params.targetId,
-            },
-          ],
+          chatroom_id: chatRoom.id,
         },
         order: [['timestamp', 'DESC']],
       };
@@ -126,14 +128,22 @@ export const sendChatToTarget: RouteDefinition = {
   middleware: validRoute(isUser()),
   async create(req, locals) {
     const sender_id = req.session?.user.id;
+    const target_id = Number(req.params.targetId);
+    let chatRoom = await getChatRoom(sender_id, target_id);
+    if (!chatRoom) {
+      chatRoom = await createChatRoom(sender_id, target_id);
+    }
     const user = (await userDb.model.findOne({
       where: { id: sender_id },
     })) as User;
-    return await sendMessageToTarget({
-      senderId: sender_id,
-      senderName: user.name,
-      targetId: Number.parseInt(req.params.targetId),
-      message: req.body.message,
-    });
+    return await sendMessageToTarget(
+      {
+        senderId: sender_id,
+        senderName: user.name,
+        targetId: target_id,
+        message: req.body.message,
+      },
+      chatRoom.id
+    );
   },
 };

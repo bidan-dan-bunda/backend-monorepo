@@ -66,6 +66,12 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
     name: Joi.string().required(),
     district_id: Joi.string().required(),
   }),
+
+  patient: Joi.object({
+    user_id: Joi.number().required(),
+    patient_note: Joi.string().optional(),
+    medial_record_id: Joi.string().required(),
+  }),
 };
 
 export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {

@@ -8,7 +8,7 @@ import Joi from '@hapi/joi';
 import { validateRequest } from '../../common';
 import Database, { getSequelizeInstance } from '../../../orm/database';
 import { validRoute, isUser } from '../../../auth/middleware';
-import { Op } from 'sequelize/types';
+import { Op } from 'sequelize';
 import sequelize from 'sequelize';
 
 const db = new Database<DeviceToken>(DeviceTokenDefinition);

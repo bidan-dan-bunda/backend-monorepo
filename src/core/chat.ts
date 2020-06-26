@@ -1,3 +1,5 @@
+import { ChatMember, ChatMemberDefinition } from './../orm/models/chatmember';
+import { ChatRoom, ChatRoomDefinition } from './../orm/models/chatrooms';
 import { ChatTopic, ChatTopicDefinition } from './../orm/models/chattopic';
 import { messaging } from './firebase/admin';
 import {
@@ -5,12 +7,15 @@ import {
   DeviceTokenDefinition,
 } from './../orm/models/devicetokens';
 import { Chat, ChatDefinition, ChatFields } from './../orm/models/chat';
-import Database from '../orm/database';
+import Database, { getSequelizeInstance } from '../orm/database';
 import { nanoid } from 'nanoid';
+import { Op } from 'sequelize';
 
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 const chatDb = new Database<Chat>(ChatDefinition);
 const chatTopicDb = new Database<ChatTopic>(ChatTopicDefinition);
+const chatRoomDb = new Database<ChatRoom>(ChatRoomDefinition);
+const chatMemberDb = new Database<ChatMember>(ChatMemberDefinition);
 
 export async function isUserDeviceTokenExist(userId: number) {
   const tokens = await deviceTokenDb.load({ where: { user_id: userId } });
@@ -31,7 +36,10 @@ export async function storeChatToDB(chatData: any) {
   return await chatDb.create(chatData);
 }
 
-export async function sendMessageToTarget(chatData: ChatData) {
+export async function sendMessageToTarget(
+  chatData: ChatData,
+  chatRoomId: string
+) {
   const { senderId, message, targetId, senderName } = chatData;
   let tokensExist = false;
   let tokens: string[] | null;
@@ -55,6 +63,7 @@ export async function sendMessageToTarget(chatData: ChatData) {
       .catch((err) => {});
   }
   const chat = await storeChatToDB({
+    chatroom_id: chatRoomId,
     sender_id: senderId,
     target_id: targetId,
     message,
@@ -109,4 +118,50 @@ export async function setUserDeviceToSubscribePuskesmasChatTopic(
     return subscribeDevicesToTopic([deviceToken], topic.topic);
   }
   return null;
+}
+
+export async function getChatRoomId() {
+  return nanoid();
+}
+
+export async function getChatRoom(
+  participantId1: number,
+  participantId2: number
+) {
+  const chatMember = await chatMemberDb.model.findOne({
+    where: {
+      user_id: participantId1,
+    },
+    include: [
+      { model: ChatMember, where: { user_id: participantId2 }, as: 'parent' },
+    ],
+    raw: true,
+  });
+  if (chatMember) {
+    const roomId = chatMember.chatroom_id;
+    const chatRoom = await chatRoomDb.model.findOne({ where: { id: roomId } });
+    return chatRoom;
+  }
+  return null;
+}
+
+export async function createChatRoom(
+  participantId1: number,
+  participantId2: number
+) {
+  const chatRoom = await chatRoomDb.create({
+    id: await getChatRoomId(),
+  });
+  const chatMember = [
+    chatMemberDb.model.create({
+      user_id: participantId1,
+      chatroom_id: chatRoom.id,
+    }),
+    chatMemberDb.model.create({
+      user_id: participantId2,
+      chatroom_id: chatRoom.id,
+    }),
+  ];
+  await Promise.all(chatMember);
+  return chatRoom;
 }

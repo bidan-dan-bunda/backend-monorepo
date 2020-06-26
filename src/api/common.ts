@@ -5,7 +5,7 @@ import multer from 'multer';
 import path from 'path';
 import { MAX_UPLOAD_FILE_SIZE } from './constants';
 import Database from '../orm/database';
-import { CountOptions } from 'sequelize/types';
+import { CountOptions } from 'sequelize';
 
 export function validateRequest(schema: ObjectSchema) {
   return function (req: Request) {
