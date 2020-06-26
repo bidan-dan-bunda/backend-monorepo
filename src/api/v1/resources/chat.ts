@@ -56,6 +56,7 @@ export const chats: RouteDefinition = {
               chats.target_id AS target_id,
               target.name AS target_name,
               chat_member_user.name AS chatroom_name,
+              chat_member_user.id AS chatroom_user_id,
               target.profile_image AS target_profile_image,
               chats.message AS message,
               chats.timestamp AS timestamp
