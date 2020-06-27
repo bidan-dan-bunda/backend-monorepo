@@ -54,9 +54,9 @@ app.use((req, res, next) => {
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   return res.status(err.status || 500).json({
-    error_code: err.code,
-    error_message: err.message || HttpStatusCodes.getStatusText(err.code),
-    error_details: err.details,
+    error_code: err?.code,
+    error_message: err?.message || HttpStatusCodes.getStatusText(err.code),
+    error_details: err?.details,
   });
 });
 
