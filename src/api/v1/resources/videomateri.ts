@@ -1,3 +1,4 @@
+import { User } from './../../../orm/models/user';
 import { RouteDefinition } from './../../resource-route';
 import {
   VideoMateri,
@@ -8,20 +9,24 @@ import { BaseObjectSchema } from '../../schema';
 import * as commonRoutes from '../../common-route-definitions';
 import { Video, VideoDefinition } from '../../../orm/models/video';
 import sequelize from 'sequelize';
-import { sum } from 'lodash';
 import moment from 'moment';
 
 const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 const videoDb = new Database<Video>(VideoDefinition, undefined);
 const schema = BaseObjectSchema.videomateri;
 
-export const index: RouteDefinition = commonRoutes.index(db);
+export const index: RouteDefinition = commonRoutes.index(db, {
+  include: [{ model: User, attributes: ['name'], as: 'author' }],
+});
 
 export const show: RouteDefinition = {
   route: '/:week',
   method: 'get',
   load(req) {
-    return db.model.findOne({ where: { week: req.params.week } });
+    return db.model.findOne({
+      where: { week: req.params.week },
+      include: [{ model: User, attributes: ['name'], as: 'author' }],
+    });
   },
 };
 

@@ -1,3 +1,4 @@
+import { User } from './user';
 import { ModelDefinition } from './../database';
 import { Model, DataTypes } from 'sequelize';
 
@@ -36,6 +37,12 @@ export const VideoDefinition: ModelDefinition = {
       modelName: this.name,
       sequelize,
       ...this.options,
+    });
+  },
+  runAfter() {
+    Video.belongsTo(User, {
+      foreignKey: 'author_id',
+      as: 'author',
     });
   },
 };

@@ -1,3 +1,4 @@
+import { User } from './user';
 import { Video } from './video';
 import {
   Model,
@@ -42,6 +43,10 @@ export const VideoMateriDefinition: ModelDefinition = {
   runAfter() {
     VideoMateri.hasMany(Video, {
       foreignKey: 'week',
+    });
+    VideoMateri.belongsTo(User, {
+      foreignKey: 'author_id',
+      as: 'author',
     });
   },
 };

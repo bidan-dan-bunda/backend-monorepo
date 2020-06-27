@@ -1,3 +1,4 @@
+import { User } from './../../../orm/models/user';
 import { isAdmin } from './../../../auth/middleware';
 import { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
@@ -31,9 +32,13 @@ export const index: RouteDefinition = {
     return countPages(db, opts)(req, res, next);
   },
   async load(req, locals, res) {
-    const videos = await db.load(locals.dbOptions);
+    const videos = await db.load({
+      ...locals.dbOptions,
+      raw: true,
+      include: [{ model: User, attributes: ['name'], as: 'author' }],
+    });
     return videos.map((video) => ({
-      ...video.toJSON(),
+      ...video,
       video_duration_str: moment.duration(video.video_duration).humanize(),
     }));
   },
@@ -41,11 +46,14 @@ export const index: RouteDefinition = {
 
 export const show = commonRoutes.show(db, undefined, {
   async load(req) {
-    const video = await db.model.findByPk(req.params.id);
+    const video = await db.model.findByPk(req.params.id, {
+      raw: true,
+      include: [{ model: User, attributes: ['name'], as: 'author' }],
+    });
     if (video) {
       const duration = video.video_duration;
       return {
-        ...video.toJSON(),
+        ...video,
         video_duration_str: duration
           ? moment.duration(duration).humanize()
           : null,
