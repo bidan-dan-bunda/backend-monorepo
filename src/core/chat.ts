@@ -10,6 +10,7 @@ import { Chat, ChatDefinition, ChatFields } from './../orm/models/chat';
 import Database, { getSequelizeInstance } from '../orm/database';
 import { nanoid } from 'nanoid';
 import { Op } from 'sequelize';
+import { reportError } from '../error';
 
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 const chatDb = new Database<Chat>(ChatDefinition);
@@ -60,7 +61,7 @@ export async function sendMessageToTarget(
         },
         tokens: tokens as string[],
       })
-      .catch((err) => {});
+      .catch(reportError);
   }
   const chat = await storeChatToDB({
     chatroom_id: chatRoomId,
@@ -81,7 +82,7 @@ export async function storeTopicId(pusId: number, topic: string) {
 }
 
 export function subscribeDevicesToTopic(tokens: string[], topic: string) {
-  return messaging.subscribeToTopic(tokens, topic);
+  return messaging.subscribeToTopic(tokens, topic).catch(reportError);
 }
 
 interface GroupChatData {
@@ -92,21 +93,23 @@ interface GroupChatData {
 }
 
 export function sendToGroup(topic: string, data: GroupChatData) {
-  return messaging.send({
-    notification: {
-      title: data.senderId.toString(),
-      body: data.message,
-    },
-    data: {
-      senderId: data.senderId.toString(),
-      senderName: data.senderName,
-      timestamp: (~~(Date.now() / 1000)).toString(),
-      pusId: data.pusId.toString(),
-      message: data.message,
-      type: 'group',
-    },
-    topic,
-  });
+  return messaging
+    .send({
+      notification: {
+        title: data.senderId.toString(),
+        body: data.message,
+      },
+      data: {
+        senderId: data.senderId.toString(),
+        senderName: data.senderName,
+        timestamp: (~~(Date.now() / 1000)).toString(),
+        pusId: data.pusId.toString(),
+        message: data.message,
+        type: 'group',
+      },
+      topic,
+    })
+    .catch(reportError);
 }
 
 export async function setUserDeviceToSubscribePuskesmasChatTopic(
