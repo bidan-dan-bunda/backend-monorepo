@@ -1,3 +1,4 @@
+import { GenericFunc } from './../utils';
 import { IS_PRODUCTION } from './../constants';
 import {
   Sequelize,
@@ -14,6 +15,7 @@ import {
 import * as models from './models';
 import { getConfig } from '../config';
 import { ModelHooks } from 'sequelize/types/lib/hooks';
+import { retryOperation } from '../utils';
 
 let sequelize: Sequelize | null = null;
 
@@ -116,11 +118,13 @@ export default class Database<T extends Model> {
   }
 
   async create(values?: object, options?: CreateOptions) {
-    return await this.model.create(values, options);
+    return await retryOperation<T>(this.model.create(values, options));
   }
 
   async update(values: object, options: UpdateOptions) {
-    const ret = await this.model.update(values, options);
+    const ret = await retryOperation<[number, T[]]>(
+      this.model.update(values, options)
+    );
     if (ret[0] == 0) {
       return null;
     }
@@ -128,6 +132,6 @@ export default class Database<T extends Model> {
   }
 
   async destroy(options: DestroyOptions) {
-    return await this.model.destroy(options);
+    return await retryOperation<number>(this.model.destroy(options));
   }
 }
