@@ -12,6 +12,7 @@ export function toArray(thing: any) {
 
 export function retryOperation<T = any>(
   fn: any,
+  shouldContinueCb: (err: any) => boolean,
   operationOpts?: retry.OperationOptions
 ): Promise<T> {
   const operation = retry.operation({
@@ -31,12 +32,14 @@ export function retryOperation<T = any>(
         resolve(ret);
         return;
       } catch (e) {
-        let err = e;
-        if (operation.retry(err)) {
+        err = e;
+        if (shouldContinueCb(err) && operation.retry(err)) {
           return;
         }
       }
+      operation.stop();
       reject(err);
+      return;
     });
   });
 }

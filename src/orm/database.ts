@@ -1,5 +1,3 @@
-import { GenericFunc } from './../utils';
-import { IS_PRODUCTION } from './../constants';
 import {
   Sequelize,
   Model,
@@ -10,6 +8,7 @@ import {
   CreateOptions,
   UpdateOptions,
   DestroyOptions,
+  ValidationError,
 } from 'sequelize';
 
 import * as models from './models';
@@ -118,12 +117,26 @@ export default class Database<T extends Model> {
   }
 
   async create(values?: object, options?: CreateOptions) {
-    return await retryOperation<T>(() => this.model.create(values, options));
+    return await retryOperation<T>(
+      () => this.model.create(values, options),
+      (err) => {
+        if (err instanceof ValidationError) {
+          return false;
+        }
+        return true;
+      }
+    );
   }
 
   async update(values: object, options: UpdateOptions) {
-    const ret = await retryOperation<[number, T[]]>(() =>
-      this.model.update(values, options)
+    const ret = await retryOperation<[number, T[]]>(
+      () => this.model.update(values, options),
+      (err) => {
+        if (err instanceof ValidationError) {
+          return false;
+        }
+        return true;
+      }
     );
     if (ret[0] == 0) {
       return null;
@@ -132,6 +145,14 @@ export default class Database<T extends Model> {
   }
 
   async destroy(options: DestroyOptions) {
-    return await retryOperation<number>(() => this.model.destroy(options));
+    return await retryOperation<number>(
+      () => this.model.destroy(options),
+      (err) => {
+        if (err instanceof ValidationError) {
+          return false;
+        }
+        return false;
+      }
+    );
   }
 }
