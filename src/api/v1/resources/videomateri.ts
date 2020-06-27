@@ -17,6 +17,7 @@ const schema = BaseObjectSchema.videomateri;
 
 export const index: RouteDefinition = commonRoutes.index(db, {
   include: [{ model: User, attributes: ['name'], as: 'author' }],
+  raw: true,
 });
 
 export const show: RouteDefinition = {
@@ -25,6 +26,7 @@ export const show: RouteDefinition = {
   load(req) {
     return db.model.findOne({
       where: { week: req.params.week },
+      raw: true,
       include: [{ model: User, attributes: ['name'], as: 'author' }],
     });
   },
