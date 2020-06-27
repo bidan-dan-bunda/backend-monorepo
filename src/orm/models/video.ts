@@ -1,15 +1,14 @@
 import { ModelDefinition } from './../database';
 import { Model, DataTypes } from 'sequelize';
 
-export interface VideoFields {
-  id: number;
-  title: string;
+export class Video extends Model {
+  id!: number;
+  title!: string;
   url?: string;
   thumbnail_url?: string;
   week?: number;
+  video_duration?: number;
 }
-
-export interface Video extends Model, VideoFields {}
 
 export const VideoDefinition: ModelDefinition = {
   name: 'video',
@@ -17,15 +16,26 @@ export const VideoDefinition: ModelDefinition = {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      allowNull: false,
       autoIncrement: true,
+    },
+    week: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
     title: DataTypes.STRING,
     url: DataTypes.STRING,
     thumbnail_url: DataTypes.STRING,
-    week: DataTypes.INTEGER,
+    author_id: DataTypes.INTEGER,
+    video_duration: DataTypes.INTEGER,
   },
   options: {
     timestamps: false,
+  },
+  run(sequelize) {
+    Video.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
   },
 };

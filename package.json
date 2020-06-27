@@ -37,6 +37,7 @@
     "@types/jest": "^25.2.3",
     "@types/jsonwebtoken": "^8.5.0",
     "@types/lodash": "^4.14.155",
+    "@types/moment": "^2.13.0",
     "@types/morgan": "^1.9.0",
     "@types/ms": "^0.7.31",
     "@types/multer": "^1.4.3",
@@ -46,6 +47,7 @@
     "@types/passport-local": "^1.0.33",
     "@types/retry": "^0.12.0",
     "@types/sequelize": "^4.28.9",
+    "@types/url-join": "^4.0.0",
     "@types/validator": "^13.0.0",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
@@ -91,6 +93,7 @@
     "is-promise": "^4.0.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
+    "moment": "^2.27.0",
     "ms": "^2.1.2",
     "multer": "^1.4.2",
     "mysql2": "^2.1.0",
@@ -99,6 +102,7 @@
     "passport-local": "^1.0.0",
     "rate-limiter-flexible": "^2.1.7",
     "retry": "^0.12.0",
-    "sequelize": "^5.21.12"
+    "sequelize": "^5.21.12",
+    "url-join": "^4.0.1"
   }
 }

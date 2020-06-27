@@ -219,7 +219,7 @@ function getHandlers(route: Route) {
     if (key == 'handler') {
       handlers.push(prop);
     }
-    if (key in mapPropNameToHandlerCreator) {
+    if (key in mapPropNameToHandlerCreator && typeof prop == 'function') {
       handlers.push((mapPropNameToHandlerCreator as any)[key](prop));
     }
   }

@@ -1,8 +1,16 @@
+import { isAdmin } from './../../../auth/middleware';
+import { Request, Response, NextFunction } from 'express';
+import createError from 'http-errors';
 import { RouteDefinition } from './../../resource-route';
 import Database from '../../../orm/database';
 import { BaseObjectSchema } from '../../schema';
 import * as commonRoutes from '../../common-route-definitions';
 import { Video, VideoDefinition } from '../../../orm/models/video';
+import {
+  extractVideoIdFromUrl,
+  getDuration,
+} from '../../../core/services/youtube';
+import moment from 'moment';
 import { countPages } from '../../common';
 
 const db = new Database<Video>(VideoDefinition, undefined);
@@ -23,13 +31,63 @@ export const index: RouteDefinition = {
     return countPages(db, opts)(req, res, next);
   },
   async load(req, locals, res) {
-    return db.load(locals.dbOptions || locals.page);
+    const videos = await db.load(locals.dbOptions);
+    return videos.map((video) => ({
+      ...video.toJSON(),
+      video_duration_str: moment.duration(video.video_duration).humanize(),
+    }));
   },
 };
 
-export const show = commonRoutes.show(db);
-export const create = commonRoutes.create(db, schema);
-export const edit = commonRoutes.edit(db, schema);
+export const show = commonRoutes.show(db, undefined, {
+  async load(req) {
+    const video = await db.model.findByPk(req.params.id);
+    if (video) {
+      const duration = video.video_duration;
+      return {
+        ...video.toJSON(),
+        video_duration_str: duration
+          ? moment.duration(duration).humanize()
+          : null,
+      };
+    }
+    return null;
+  },
+});
+
+function isValidUrl(req: Request, res: Response, next: NextFunction) {
+  const videoUrl = req.body.url;
+  const videoId = extractVideoIdFromUrl(videoUrl);
+  if (videoId && !Array.isArray(videoId)) {
+    res.locals.videoId = videoId;
+    return next();
+  }
+  return next(createError(400, { message: 'Invalid URL format' }));
+}
+
+export const create = commonRoutes.create(db, schema, undefined, {
+  middleware: [isAdmin, isValidUrl],
+  create: undefined,
+  handler(req, res, next) {
+    getDuration(res.locals.videoId).then((duration) => {
+      db.model.create({ ...req.body, video_duration: duration });
+    });
+    return res.status(202).json({ message: 'Accepted' });
+  },
+});
+
+export const edit = commonRoutes.edit(db, schema, undefined, {
+  middleware: [isAdmin, isValidUrl],
+  handler(req, res, next) {
+    getDuration(res.locals.videoId).then((duration) => {
+      db.model.update(
+        { ...req.body, video_duration: duration },
+        { where: { id: req.params.id } }
+      );
+    });
+    return res.status(202).json({ message: 'Accepted' });
+  },
+});
 export const destroy = commonRoutes.destroy(db);
 
 const destLastPart = 'video_thumbnails';

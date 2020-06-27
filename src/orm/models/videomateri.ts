@@ -8,29 +8,40 @@ import {
 } from 'sequelize';
 import { ModelDefinition } from '../database';
 
-export interface VideoMateriFields {
-  id: number;
-  content: string;
+export class VideoMateri extends Model {
+  id!: number;
+  content!: string;
   thumbnail_url?: string;
   week?: number;
+  author_id!: number;
 }
-
-export interface VideoMateri extends Model, VideoMateriFields {}
 
 export const VideoMateriDefinition: ModelDefinition = {
   name: 'VideoMateri',
   attributes: {
-    id: {
+    week: {
       type: DataTypes.INTEGER,
       primaryKey: true,
-      autoIncrement: true,
+      allowNull: false,
     },
     content: DataTypes.STRING,
     thumbnail_url: DataTypes.STRING,
-    week: DataTypes.INTEGER,
+    author_id: DataTypes.INTEGER,
   },
   options: {
     timestamps: false,
     tableName: 'videomateri',
+  },
+  run(sequelize) {
+    VideoMateri.init(this.attributes, {
+      modelName: this.name,
+      sequelize,
+      ...this.options,
+    });
+  },
+  runAfter() {
+    VideoMateri.hasMany(Video, {
+      foreignKey: 'week',
+    });
   },
 };
