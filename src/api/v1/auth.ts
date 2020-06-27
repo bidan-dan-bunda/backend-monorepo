@@ -11,7 +11,10 @@ import {
   setUserAddressToPuskesmasAddress,
   getPuskesmasByToken,
 } from '../../core/pusksesmas-token';
-import { setUserDeviceToSubscribePuskesmasChatTopic } from '../../core/chat';
+import {
+  setUserDeviceToSubscribePuskesmasChatTopic,
+  sendNotSentMessagesToId,
+} from '../../core/chat';
 import Database from '../../orm/database';
 import {
   DeviceToken,
@@ -65,6 +68,7 @@ export const login: RouteDefinition = {
                 user_id: ret.id,
               })
             );
+            res.cookie('device_token', req.body.device_token);
           }
           try {
             await tasks;
@@ -124,8 +128,10 @@ export const register: RouteDefinition = {
                 user_id: ret.id,
               })
             );
+            res.cookie('device_token', req.body.device_token);
           }
           await tasks;
+          sendNotSentMessagesToId(ret.id, req.body.device_token);
           if (req.session?.user) {
             req.session.user.pus_id = puskesmas.id;
           }
@@ -155,6 +161,13 @@ export const logout: RouteDefinition = {
       return res.status(205).json({
         message: ErrorMessages.NOT_LOGGED_IN,
       });
+    }
+
+    const deviceToken = req.cookies['device_token'];
+    if (deviceToken) {
+      deviceTokenDb.model
+        .destroy({ where: { token: deviceToken } })
+        .catch(reportError);
     }
 
     req.session?.destroy((err) => {

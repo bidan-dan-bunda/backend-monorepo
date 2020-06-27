@@ -1,3 +1,4 @@
+import { User, UserDefinition } from './../orm/models/user';
 import { ChatMember, ChatMemberDefinition } from './../orm/models/chatmember';
 import { ChatRoom, ChatRoomDefinition } from './../orm/models/chatrooms';
 import { ChatTopic, ChatTopicDefinition } from './../orm/models/chattopic';
@@ -6,7 +7,7 @@ import {
   DeviceToken,
   DeviceTokenDefinition,
 } from './../orm/models/devicetokens';
-import { Chat, ChatDefinition, ChatFields } from './../orm/models/chat';
+import { Chat, ChatDefinition } from './../orm/models/chat';
 import Database, { getSequelizeInstance } from '../orm/database';
 import { nanoid } from 'nanoid';
 import { Op } from 'sequelize';
@@ -17,6 +18,7 @@ const chatDb = new Database<Chat>(ChatDefinition);
 const chatTopicDb = new Database<ChatTopic>(ChatTopicDefinition);
 const chatRoomDb = new Database<ChatRoom>(ChatRoomDefinition);
 const chatMemberDb = new Database<ChatMember>(ChatMemberDefinition);
+const userDb = new Database<User>(UserDefinition);
 
 export async function isUserDeviceTokenExist(userId: number) {
   const tokens = await deviceTokenDb.load({ where: { user_id: userId } });
@@ -37,10 +39,7 @@ export async function storeChatToDB(chatData: any) {
   return await chatDb.create(chatData);
 }
 
-export async function sendMessageToTarget(
-  chatData: ChatData,
-  chatRoomId: string
-) {
+export async function sendMessageToTarget(chatData: ChatData) {
   const { senderId, message, targetId, senderName } = chatData;
   let tokensExist = false;
   let tokens: string[] | null;
@@ -63,14 +62,7 @@ export async function sendMessageToTarget(
       })
       .catch(reportError);
   }
-  const chat = await storeChatToDB({
-    chatroom_id: chatRoomId,
-    sender_id: senderId,
-    target_id: targetId,
-    message,
-    is_sent: tokensExist,
-  });
-  return chat;
+  return tokensExist;
 }
 
 export function createTopic() {
@@ -110,6 +102,26 @@ export function sendToGroup(topic: string, data: GroupChatData) {
       topic,
     })
     .catch(reportError);
+}
+
+export async function sendNotSentMessagesToId(
+  userId: number,
+  deviceToken: string
+) {
+  const user = (await userDb.model.findOne({ where: { id: userId } })) as User;
+  const messages = (
+    await chatDb.model.findAll({
+      where: { target_id: userId, is_sent: false },
+    })
+  ).map((message) => ({
+    message: message.message,
+    senderId: message.sender_id,
+    targetId: message.target_id,
+    senderName: user.name,
+  }));
+  for (const message of messages) {
+    sendMessageToTarget(message).catch(reportError);
+  }
 }
 
 export async function setUserDeviceToSubscribePuskesmasChatTopic(

@@ -2,15 +2,15 @@ import { ModelDefinition } from './../database';
 import { Model, DataTypes } from 'sequelize';
 import sequelize from 'sequelize';
 
-export interface ChatFields {
-  id: number;
-  chatroom_id: string;
-  message: string;
-  timestamp: Date;
-  is_sent: boolean;
+export class Chat extends Model {
+  id!: number;
+  sender_id!: number;
+  target_id!: number;
+  chatroom_id!: string;
+  message!: string;
+  timestamp!: Date;
+  is_sent!: boolean;
 }
-
-export interface Chat extends Model {}
 
 export const ChatDefinition: ModelDefinition = {
   name: 'chat',

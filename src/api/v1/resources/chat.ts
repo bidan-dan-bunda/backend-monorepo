@@ -1,22 +1,21 @@
 import { isAdmin } from './../../../auth/middleware';
-import { IS_HEROKU } from './../../../constants';
 import { ChatRoom, ChatRoomDefinition } from './../../../orm/models/chatrooms';
 import { UserDefinition, User } from './../../../orm/models/user';
-import { Request, Response, NextFunction } from 'express';
 import createError from 'http-errors';
-import { RouteDefinition } from './../../resource-route';
 import { Chat, ChatDefinition } from './../../../orm/models/chat';
 import * as commonRoutes from '../../common-route-definitions';
-import Database, { getSequelizeInstance } from '../../../orm/database';
 import { countPages, validateRequest } from '../../common';
 import {
   sendMessageToTarget,
   getChatRoom,
   createChatRoom,
+  storeChatToDB,
 } from '../../../core/chat';
 import Joi from '@hapi/joi';
 import { validRoute, isUser } from '../../../auth/middleware';
 import { QueryTypes, Op } from 'sequelize';
+import Database, { getSequelizeInstance } from '../../../orm/database';
+import { RouteDefinition } from '../../resource-route';
 
 const db = new Database<Chat>(ChatDefinition);
 const chatRoomDb = new Database<ChatRoom>(ChatRoomDefinition);
@@ -25,21 +24,7 @@ const userDb = new Database<User>(UserDefinition);
 export const chats: RouteDefinition = {
   route: '/',
   method: 'get',
-  middleware: [
-    validRoute(isUser()),
-    /* (req, res, next) => {
-      const queryOptions = {
-        ...res.locals.page,
-        where: {
-          sender_id: req.session?.user.id,
-        },
-        order: [['timestamp', 'DESC']],
-        attributes: { exclude: ['message'] },
-      };
-      res.locals.queryOptions = queryOptions;
-      return countPages(db, queryOptions)(req, res, next);
-    }, */
-  ],
+  middleware: [validRoute(isUser())],
   async load(req, locals) {
     const sequelize = getSequelizeInstance();
     return new Promise((resolve, reject) => {
@@ -162,15 +147,19 @@ export const sendChatToTarget: RouteDefinition = {
     const user = (await userDb.model.findOne({
       where: { id: sender_id },
     })) as User;
-    return await sendMessageToTarget(
-      {
-        senderId: sender_id,
-        senderName: user.name,
-        targetId: target_id,
-        message: req.body.message,
-      },
-      chatRoom.id
-    );
+    const tokensExists = await sendMessageToTarget({
+      senderId: sender_id,
+      senderName: user.name,
+      targetId: target_id,
+      message: req.body.message,
+    });
+    return await storeChatToDB({
+      chatroom_id: chatRoom.id,
+      sender_id,
+      target_id,
+      message: req.body.message,
+      is_sent: tokensExists,
+    });
   },
 };
 
