@@ -37,15 +37,17 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
 
   videomateri: Joi.object({
     content: Joi.string().required(),
-    week: Joi.number().allow(null),
+    week: Joi.number().required(),
     thumbnail_url: Joi.string().allow(null),
+    author_id: Joi.number().required(),
   }),
 
   video: Joi.object({
     title: Joi.string().required(),
-    week: Joi.number().allow(null),
+    week: Joi.number().allow(),
     url: Joi.string().allow(null),
     thumbnail_url: Joi.string().allow(null),
+    author_id: Joi.number().required(),
   }),
 
   'locations/province': Joi.object({
@@ -82,14 +84,14 @@ export const DerivedObjectSchema: { [id: string]: Joi.ObjectSchema } = {
       then: Joi.required(),
       otherwise: Joi.optional(),
     }),
-    device_token: Joi.string().allow(null),
+    device_token: Joi.string().required(),
   }),
 };
 
 export const UserLoginSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required(),
-  device_token: Joi.string().allow(null),
+  device_token: Joi.string().required(),
 });
 
 // array, error, single, no data
