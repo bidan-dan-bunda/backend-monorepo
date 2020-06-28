@@ -70,7 +70,7 @@ export const login: RouteDefinition = {
             );
             res.cookie('device_token', req.body.device_token);
           }
-          Promise.resolve(async () => await tasks)
+          Promise.all(tasks)
             .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
             .catch(reportError);
         }
@@ -111,6 +111,10 @@ export const register: RouteDefinition = {
       if (req.body.puskesmas_token) {
         const puskesmas = await getPuskesmasByToken(req.body.puskesmas_token);
         if (puskesmas) {
+          if (req.session?.user) {
+            req.session.user.pus_id = puskesmas.id;
+          }
+
           const tasks: any[] = [];
           tasks.push(setUserAddressToPuskesmasAddress(puskesmas, ret as User));
           if (req.body.device_token) {
@@ -128,12 +132,9 @@ export const register: RouteDefinition = {
             );
             res.cookie('device_token', req.body.device_token);
           }
-          Promise.resolve(async () => await tasks)
+          Promise.all(tasks)
             .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
             .catch(reportError);
-          if (req.session?.user) {
-            req.session.user.pus_id = puskesmas.id;
-          }
         } else {
           return res.status(400).json({
             message: 'Invalid puskesmas token',
