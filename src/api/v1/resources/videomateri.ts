@@ -15,9 +15,36 @@ const db = new Database<VideoMateri>(VideoMateriDefinition, undefined);
 const videoDb = new Database<Video>(VideoDefinition, undefined);
 const schema = BaseObjectSchema.videomateri;
 
-export const index: RouteDefinition = commonRoutes.index(db, {
-  include: [{ model: User, attributes: ['name'], as: 'author' }],
-  raw: true,
+export const index: RouteDefinition = commonRoutes.index(db, undefined, {
+  async load(req) {
+    const sequelizeInstance = getSequelizeInstance();
+    const t = await sequelizeInstance.transaction();
+    await sequelizeInstance.query('SET SQL_MODE=""', { transaction: t });
+    const videoMateri = await db.model.findAll({
+      transaction: t,
+      raw: true,
+      include: [
+        { model: User, attributes: ['name'], as: 'author' },
+        {
+          model: Video,
+          as: 'videos',
+          attributes: [
+            [sequelize.fn('COUNT', sequelize.col('videos.id')), 'total'],
+            [sequelize.fn('SUM', sequelize.col('video_duration')), 'duration'],
+          ],
+        },
+      ],
+    });
+    await t.commit();
+    if (videoMateri.length) {
+      const duration = (videoMateri as any)['videos.duration'];
+      return videoMateri.map((model) => ({
+        ...model,
+        ['videos.duration_str']: moment.duration(duration).humanize(),
+      }));
+    }
+    return null;
+  },
 });
 
 export const show: RouteDefinition = {

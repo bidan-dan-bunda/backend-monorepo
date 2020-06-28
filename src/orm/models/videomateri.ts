@@ -43,6 +43,7 @@ export const VideoMateriDefinition: ModelDefinition = {
   runAfter() {
     VideoMateri.hasMany(Video, {
       foreignKey: 'week',
+      as: 'videos',
     });
     VideoMateri.belongsTo(User, {
       foreignKey: 'author_id',
