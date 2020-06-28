@@ -39,8 +39,12 @@ export const index: RouteDefinition = {
     });
     return videos.map((video) => ({
       ...video,
+      yt_video_id: video.url && extractVideoIdFromUrl(video.url),
       video_duration_str: moment.duration(video.video_duration).humanize(),
     }));
+  },
+  post() {
+    console.log('hello bos');
   },
 };
 
@@ -54,6 +58,7 @@ export const show = commonRoutes.show(db, undefined, {
       const duration = video.video_duration;
       return {
         ...video,
+        yt_video_id: video.url && extractVideoIdFromUrl(video.url),
         video_duration_str: duration
           ? moment.duration(duration).humanize()
           : null,
