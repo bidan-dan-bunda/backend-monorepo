@@ -2,13 +2,7 @@ import { User } from './user';
 import { Model, DataTypes } from 'sequelize';
 import { ModelDefinition } from '../database';
 
-export interface PatientFields {
-  user_id: number;
-  patient_note: string;
-  medical_record_id: number;
-}
-
-export class Patient extends Model implements PatientFields {
+export class Patient extends Model {
   user_id!: number;
   patient_note!: string;
   medical_record_id!: number;
@@ -22,10 +16,7 @@ export const PatientDefinition: ModelDefinition = {
       primaryKey: true,
       autoIncrement: true,
     },
-    patient_note: {
-      type: DataTypes.STRING(512),
-      allowNull: false,
-    },
+    patient_note: DataTypes.STRING(512),
     medical_record_id: {
       type: DataTypes.STRING(64),
       allowNull: false,
@@ -44,7 +35,6 @@ export const PatientDefinition: ModelDefinition = {
   runAfter() {
     Patient.belongsTo(User, {
       foreignKey: 'user_id',
-      as: 'user',
     });
   },
 };
