@@ -1,3 +1,4 @@
+import { IS_HEROKU } from './constants';
 import createError from 'http-errors';
 import * as HttpStatusCodes from 'http-status-codes';
 import express, { NextFunction, Request, Response } from 'express';
@@ -12,6 +13,17 @@ Database.initializeModels();
 
 import apiRouterV1 from './api/v1/index';
 import { authenticateV1 } from './auth/middleware';
+
+import * as Sentry from '@sentry/node';
+import { getConfig } from './config';
+
+if (getConfig('USE_SENTRY') == 1 || IS_HEROKU) {
+  Sentry.init({
+    dsn: getConfig('SENTRY_DSN'),
+  });
+}
+
+// @ts-ignore
 
 const app = express();
 

@@ -15,6 +15,7 @@ import * as models from './models';
 import { getConfig } from '../config';
 import { ModelHooks } from 'sequelize/types/lib/hooks';
 import { retryOperation } from '../utils';
+import { log } from '../logger';
 
 let sequelize: Sequelize | null = null;
 
@@ -47,6 +48,7 @@ export function getSequelizeInstance({
         acquire: 30000,
         idle: 1000,
       },
+      logging: (msg) => log(msg, ['sequelize-query']),
       timezone: '+07:00',
     });
   }
