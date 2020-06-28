@@ -36,7 +36,7 @@ export const show = commonRoutes.show(db);
 export const index: RouteDefinition = commonRoutes.show(tokenDb, undefined, {
   route: '/tokens/:token',
   load(req) {
-    return tokenDb.model.findOne({
+    return tokenDb.model.findAll({
       where: { token: req.params.token as any },
       include: [{ model: Puskesmas, as: 'puskesmas' }],
     });
