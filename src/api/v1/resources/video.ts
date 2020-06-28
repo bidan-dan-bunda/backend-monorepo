@@ -43,9 +43,6 @@ export const index: RouteDefinition = {
       video_duration_str: moment.duration(video.video_duration).humanize(),
     }));
   },
-  post() {
-    console.log('hello bos');
-  },
 };
 
 export const show = commonRoutes.show(db, undefined, {
