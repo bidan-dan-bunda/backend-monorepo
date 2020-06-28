@@ -17,40 +17,22 @@ const schema = BaseObjectSchema.videomateri;
 
 export const index: RouteDefinition = commonRoutes.index(db, undefined, {
   async load(req) {
-    const sequelizeInstance = getSequelizeInstance();
-    const t = await sequelizeInstance.transaction();
-    await sequelizeInstance.query('SET SQL_MODE=""', { transaction: t });
     const videoMateri = await db.model.findAll({
-      transaction: t,
       raw: true,
+      group: 'week',
       include: [
-        { model: User, attributes: ['name'], as: 'author', required: true },
+        { model: User, attributes: ['name'], as: 'author', required: false },
         {
           model: Video,
           as: 'videos',
           attributes: [
-            [
-              sequelize.fn(
-                'COALESCE',
-                sequelize.fn('COUNT', sequelize.col('videos.id')),
-                0
-              ),
-              'total',
-            ],
-            [
-              sequelize.fn(
-                'COALESCE',
-                sequelize.fn('SUM', sequelize.col('video_duration')),
-                0
-              ),
-              'duration',
-            ],
+            [sequelize.fn('COUNT', sequelize.col('videos.id')), 'total'],
+            [sequelize.fn('SUM', sequelize.col('video_duration')), 'duration'],
           ],
-          required: true,
+          required: false,
         },
       ],
     });
-    await t.commit();
     if (videoMateri.length) {
       return videoMateri.map((model) => {
         const duration = (model as any)['videos.duration'];
@@ -79,22 +61,8 @@ export const show: RouteDefinition = {
           model: Video,
           as: 'videos',
           attributes: [
-            [
-              sequelize.fn(
-                'COALESCE',
-                sequelize.fn('COUNT', sequelize.col('videos.id')),
-                0
-              ),
-              'total',
-            ],
-            [
-              sequelize.fn(
-                'COALESCE',
-                sequelize.fn('SUM', sequelize.col('video_duration')),
-                0
-              ),
-              'duration',
-            ],
+            [sequelize.fn('COUNT', sequelize.col('videos.id')), 'total'],
+            [sequelize.fn('SUM', sequelize.col('video_duration')), 'duration'],
           ],
           required: true,
         },
