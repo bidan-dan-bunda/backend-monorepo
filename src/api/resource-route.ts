@@ -37,6 +37,10 @@ export interface UploadCallback {
   (req: Request, res: UploadApiResponse): Promise<any> | any;
 }
 
+export interface PostHandler {
+  (req: Request, error: any): Promise<any> | any;
+}
+
 export interface UploadDescription {
   path?: string;
   callback?: UploadCallback;
@@ -55,6 +59,7 @@ export interface RouteDefinition {
   edit?: ResourceHandler;
   destroy?: ResourceHandler;
   upload?: UploadDescription;
+  post?: PostHandler;
 }
 
 export type Route = RouteDefinition | RequestHandler;
@@ -112,7 +117,7 @@ function createHandler(
       HttpStatusCodes.BAD_REQUEST
     ),
   }: { [key: string]: any } = {},
-
+  postHandler?: PostHandler,
   ...params: any
 ) {
   return async function (req: Request, res: Response, next: NextFunction) {
@@ -141,29 +146,21 @@ function createHandler(
       return res.json({ message: messageOnSuccess });
     }
 
+    let error = null;
     try {
       const ret = h(req, res.locals, req.params, ...params) as
         | Promise<any>
         | any;
       if (isPromise(ret)) {
-        try {
-          const val = (await ret) as any;
-          if (!val && validate) {
-            return next();
-          }
-
-          if (!val && (retrieveData || editData || destroyData)) {
-            return next(createError(statusCodeOnNoData));
-          }
-          return end(statusCodeOnSuccess, val);
-        } catch (err) {
-          return next(
-            createError(
-              statusCodeOnException,
-              err.message || messageOnException
-            )
-          );
+        const val = (await ret) as any;
+        if (!val && validate) {
+          return next();
         }
+
+        if (!val && (retrieveData || editData || destroyData)) {
+          return next(createError(statusCodeOnNoData));
+        }
+        return end(statusCodeOnSuccess, val);
       }
       if (!ret && validate) {
         return next();
@@ -174,27 +171,36 @@ function createHandler(
       }
       return end(statusCodeOnSuccess, ret);
     } catch (err) {
+      error = err;
       return next(
         createError(statusCodeOnException, err.message || messageOnException)
       );
+    } finally {
+      postHandler && postHandler(req, error);
     }
   };
 }
 
-function createResourceLoadHandler(load: ResourceHandler) {
-  return createHandler(load, { retrieveData: true });
+function createResourceLoadHandler(load: ResourceHandler, post?: PostHandler) {
+  return createHandler(load, { retrieveData: true }, {}, {}, post);
 }
 
-function createResourceCreateHandler(create: ResourceHandler) {
-  return createHandler(create, { createData: true });
+function createResourceCreateHandler(
+  create: ResourceHandler,
+  post?: PostHandler
+) {
+  return createHandler(create, { createData: true }, {}, {}, post);
 }
 
-function createResourceEditHandler(edit: ResourceHandler) {
-  return createHandler(edit, { editData: true });
+function createResourceEditHandler(edit: ResourceHandler, post?: PostHandler) {
+  return createHandler(edit, { editData: true }, {}, {}, post);
 }
 
-function createResourceDestroyHandler(destroy: ResourceHandler) {
-  return createHandler(destroy, { destroyData: true });
+function createResourceDestroyHandler(
+  destroy: ResourceHandler,
+  post?: PostHandler
+) {
+  return createHandler(destroy, { destroyData: true }, {}, {}, post);
 }
 
 function createValidateRequestMiddleware(validateRequest: ResourceHandler) {
@@ -209,7 +215,7 @@ const mapPropNameToHandlerCreator = {
   upload: createUploadHandler,
 };
 
-function getHandlers(route: Route) {
+function getHandlers(route: Route, post?: PostHandler) {
   if (typeof route == 'function') {
     return route;
   }
@@ -220,7 +226,7 @@ function getHandlers(route: Route) {
       handlers.push(prop);
     }
     if (key in mapPropNameToHandlerCreator && typeof prop == 'function') {
-      handlers.push((mapPropNameToHandlerCreator as any)[key](prop));
+      handlers.push((mapPropNameToHandlerCreator as any)[key](prop, post));
     }
   }
   return handlers;
@@ -234,7 +240,7 @@ export function createResourceRouter(routes: {
     const route = routes[action] as RouteDefinition;
     const method = route.method || mapActionsToMethods[action];
     const routeURL = route.route || mapActionsToRoutesDefaults[action];
-    const handlers = toArray(getHandlers(routes[action]));
+    const handlers = toArray(getHandlers(routes[action], route.post));
 
     if (method && handlers) {
       const middleware = toArray(route.middleware) as RequestHandler[];
