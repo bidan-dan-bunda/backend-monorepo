@@ -40,7 +40,9 @@ export const index: RouteDefinition = {
     return videos.map((video) => ({
       ...video,
       yt_video_id: video.url && extractVideoIdFromUrl(video.url),
-      video_duration_str: moment.duration(video.video_duration).humanize(),
+      video_duration_str:
+        video.video_duration &&
+        moment.duration(video.video_duration).humanize(),
     }));
   },
 };

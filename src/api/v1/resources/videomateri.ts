@@ -24,24 +24,42 @@ export const index: RouteDefinition = commonRoutes.index(db, undefined, {
       transaction: t,
       raw: true,
       include: [
-        { model: User, attributes: ['name'], as: 'author' },
+        { model: User, attributes: ['name'], as: 'author', required: true },
         {
           model: Video,
           as: 'videos',
           attributes: [
-            [sequelize.fn('COUNT', sequelize.col('videos.id')), 'total'],
-            [sequelize.fn('SUM', sequelize.col('video_duration')), 'duration'],
+            [
+              sequelize.fn(
+                'COALESCE',
+                sequelize.fn('COUNT', sequelize.col('videos.id')),
+                0
+              ),
+              'total',
+            ],
+            [
+              sequelize.fn(
+                'COALESCE',
+                sequelize.fn('SUM', sequelize.col('video_duration')),
+                0
+              ),
+              'duration',
+            ],
           ],
+          required: true,
         },
       ],
     });
     await t.commit();
     if (videoMateri.length) {
-      const duration = (videoMateri as any)['videos.duration'];
-      return videoMateri.map((model) => ({
-        ...model,
-        ['videos.duration_str']: moment.duration(duration).humanize(),
-      }));
+      return videoMateri.map((model) => {
+        const duration = (model as any)['videos.duration'];
+        return {
+          ...model,
+          ['videos.duration_str']:
+            duration && moment.duration(duration).humanize(),
+        };
+      });
     }
     return null;
   },
@@ -54,15 +72,31 @@ export const show: RouteDefinition = {
     const videoMateri = await db.model.findOne({
       where: { week: req.params.week },
       raw: true,
+      group: 'week',
       include: [
-        { model: User, attributes: ['name'], as: 'author' },
+        { model: User, attributes: ['name'], as: 'author', required: true },
         {
           model: Video,
           as: 'videos',
           attributes: [
-            [sequelize.fn('COUNT', sequelize.col('videos.id')), 'total'],
-            [sequelize.fn('SUM', sequelize.col('video_duration')), 'duration'],
+            [
+              sequelize.fn(
+                'COALESCE',
+                sequelize.fn('COUNT', sequelize.col('videos.id')),
+                0
+              ),
+              'total',
+            ],
+            [
+              sequelize.fn(
+                'COALESCE',
+                sequelize.fn('SUM', sequelize.col('video_duration')),
+                0
+              ),
+              'duration',
+            ],
           ],
+          required: true,
         },
       ],
     });
@@ -70,7 +104,8 @@ export const show: RouteDefinition = {
       const duration = (videoMateri as any)['videos.duration'];
       return {
         ...videoMateri,
-        ['videos.duration_str']: moment.duration(duration).humanize(),
+        ['videos.duration_str']:
+          duration && moment.duration(duration).humanize(),
       };
     }
     return null;
