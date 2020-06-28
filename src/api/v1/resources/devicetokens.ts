@@ -10,6 +10,8 @@ import Database, { getSequelizeInstance } from '../../../orm/database';
 import { validRoute, isUser } from '../../../auth/middleware';
 import { Op } from 'sequelize';
 import sequelize from 'sequelize';
+import { setUserDeviceToSubscribePuskesmasChatTopic } from '../../../core/chat';
+import { reportError } from '../../../error';
 
 const db = new Database<DeviceToken>(DeviceTokenDefinition);
 
@@ -26,6 +28,10 @@ export const registerToken: RouteDefinition = {
   create(req, res, next) {
     const { device_token } = req.body;
     const user_id = req.session?.user.id;
+    setUserDeviceToSubscribePuskesmasChatTopic(
+      req.session?.user.pus_id,
+      device_token
+    ).catch(reportError);
     return db.create({ token: device_token, user_id });
   },
 };
