@@ -41,14 +41,6 @@ export const login: RouteDefinition = {
     try {
       const ret = await signin({ username, password });
 
-      if (req.session && !req.query.no_cookie) {
-        req.session.user = {
-          id: ret.id,
-          user_type: ret.user_type,
-          pus_id: ret.pus_id,
-        };
-      }
-
       if (ret.pus_id) {
         const puskesmas = await puskesmasDb.model.findOne({
           where: { id: ret.pus_id },
@@ -62,18 +54,33 @@ export const login: RouteDefinition = {
                 req.body.device_token
               )
             );
-            tasks.push(
-              deviceTokenDb.create({
+            try {
+              await deviceTokenDb.create({
                 token: req.body.device_token,
                 user_id: ret.id,
-              })
-            );
+              });
+            } catch (err) {
+              return next(
+                createError(400, {
+                  message:
+                    'Cannot create device_token, possibly duplicate token exists',
+                })
+              );
+            }
             res.cookie('device_token', req.body.device_token);
           }
           Promise.all(tasks)
             .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
             .catch(reportError);
         }
+      }
+
+      if (req.session && !req.query.no_cookie) {
+        req.session.user = {
+          id: ret.id,
+          user_type: ret.user_type,
+          pus_id: ret.pus_id,
+        };
       }
 
       return res.status(200).json({
@@ -99,18 +106,10 @@ export const register: RouteDefinition = {
     }
 
     try {
-      const ret = await signup(req.body as UserFields);
-
-      if (req.session && !req.query.no_cookie) {
-        req.session.user = {
-          id: ret.id,
-          user_type: ret.user_type,
-        };
-      }
-
       if (req.body.puskesmas_token) {
         const puskesmas = await getPuskesmasByToken(req.body.puskesmas_token);
         if (puskesmas) {
+          const ret = await signup(req.body as UserFields);
           if (req.session?.user) {
             req.session.user.pus_id = puskesmas.id;
           }
@@ -124,29 +123,43 @@ export const register: RouteDefinition = {
                 req.body.device_token
               )
             );
-            tasks.push(
-              deviceTokenDb.create({
+            try {
+              await deviceTokenDb.create({
                 token: req.body.device_token,
                 user_id: ret.id,
-              })
-            );
+              });
+            } catch (err) {
+              return next(
+                createError(400, {
+                  message:
+                    'Cannot create device_token, possibly duplicate token exists',
+                })
+              );
+            }
             res.cookie('device_token', req.body.device_token);
           }
           Promise.all(tasks)
             .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
             .catch(reportError);
+
+          if (req.session && !req.query.no_cookie) {
+            req.session.user = {
+              id: ret.id,
+              user_type: ret.user_type,
+            };
+          }
+
+          return res.status(200).json({
+            data: {
+              user_id: ret.id,
+            },
+          });
         } else {
           return res.status(400).json({
             message: 'Invalid puskesmas token',
           });
         }
       }
-
-      return res.status(200).json({
-        data: {
-          user_id: ret.id,
-        },
-      });
     } catch (err) {
       return next(createError(err.httpCode || 400, err));
     }
