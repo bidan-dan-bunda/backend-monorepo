@@ -44,6 +44,7 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   video: Joi.object({
     title: Joi.string().required(),
     url: Joi.string().allow(null),
+    week: Joi.number().required(),
     thumbnail_url: Joi.string().allow(null),
     videomateri_id: Joi.number().allow(null),
     author_id: Joi.number().required(),
@@ -72,6 +73,12 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
     user_id: Joi.number().required(),
     patient_note: Joi.string().optional(),
     medial_record_id: Joi.string().required(),
+  }),
+
+  jadwaldiskusi: Joi.object({
+    title: Joi.string().required(),
+    timestamp: Joi.number().required(),
+    reminder_timestamp: Joi.number().optional(),
   }),
 };
 
