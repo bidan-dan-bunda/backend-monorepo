@@ -27,7 +27,17 @@ export const show: RouteDefinition = {
     return db.model.findOne({
       where: { week: req.params.week },
       raw: true,
-      include: [{ model: User, attributes: ['name'], as: 'author' }],
+      include: [
+        { model: User, attributes: ['name'], as: 'author' },
+        {
+          model: Video,
+          as: 'videos',
+          attributes: [
+            [sequelize.fn('COUNT', sequelize.col('videos.id')), 'total'],
+            [sequelize.fn('SUM', sequelize.col('video_duration')), 'duration'],
+          ],
+        },
+      ],
     });
   },
 };
