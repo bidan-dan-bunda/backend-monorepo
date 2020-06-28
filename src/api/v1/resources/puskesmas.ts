@@ -33,14 +33,15 @@ const tokenDb = new Database<PuskesmasToken>(
 
 export const show = commonRoutes.show(db);
 
-export const index: RouteDefinition = commonRoutes.index(
-  tokenDb,
-  (req) => ({
-    where: { token: req.params.token as any },
-    include: [{ model: Puskesmas, as: 'puskesmas' }],
-  }),
-  { route: '/tokens/:token' }
-);
+export const index: RouteDefinition = commonRoutes.show(tokenDb, undefined, {
+  route: '/tokens/:token',
+  load(req) {
+    return tokenDb.model.findOne({
+      where: { token: req.params.token as any },
+      include: [{ model: Puskesmas, as: 'puskesmas' }],
+    });
+  },
+});
 
 export const showTokens: RouteDefinition = {
   route: '/:id/tokens',
