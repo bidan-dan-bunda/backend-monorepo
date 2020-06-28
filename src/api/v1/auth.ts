@@ -163,7 +163,7 @@ export const logout: RouteDefinition = {
       });
     }
 
-    const deviceToken = req.cookies['device_token'];
+    const deviceToken = req.cookies['device_token'] || req.body.device_token;
     if (deviceToken) {
       deviceTokenDb.model
         .destroy({ where: { token: deviceToken } })
