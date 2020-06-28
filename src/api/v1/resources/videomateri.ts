@@ -23,8 +23,8 @@ export const index: RouteDefinition = commonRoutes.index(db, {
 export const show: RouteDefinition = {
   route: '/:week',
   method: 'get',
-  load(req) {
-    return db.model.findOne({
+  async load(req) {
+    const videoMateri = await db.model.findOne({
       where: { week: req.params.week },
       raw: true,
       include: [
@@ -39,6 +39,14 @@ export const show: RouteDefinition = {
         },
       ],
     });
+    if (videoMateri) {
+      const duration = (videoMateri as any)['videos.duration'];
+      return {
+        ...videoMateri,
+        ['videos.duration_str']: moment.duration(duration).humanize(),
+      };
+    }
+    return null;
   },
 };
 

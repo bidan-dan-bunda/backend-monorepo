@@ -54,7 +54,7 @@ export const login: RouteDefinition = {
           where: { id: ret.pus_id },
         });
         if (puskesmas) {
-          const tasks = [];
+          const tasks: any[] = [];
           if (req.body.device_token) {
             tasks.push(
               setUserDeviceToSubscribePuskesmasChatTopic(
@@ -70,11 +70,9 @@ export const login: RouteDefinition = {
             );
             res.cookie('device_token', req.body.device_token);
           }
-          try {
-            await tasks;
-          } catch (err) {
-            reportError(err);
-          }
+          Promise.resolve(async () => await tasks)
+            .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
+            .catch(reportError);
         }
       }
 
@@ -113,7 +111,7 @@ export const register: RouteDefinition = {
       if (req.body.puskesmas_token) {
         const puskesmas = await getPuskesmasByToken(req.body.puskesmas_token);
         if (puskesmas) {
-          const tasks = [];
+          const tasks: any[] = [];
           tasks.push(setUserAddressToPuskesmasAddress(puskesmas, ret as User));
           if (req.body.device_token) {
             tasks.push(
@@ -130,8 +128,9 @@ export const register: RouteDefinition = {
             );
             res.cookie('device_token', req.body.device_token);
           }
-          await tasks;
-          sendNotSentMessagesToId(ret.id, req.body.device_token);
+          Promise.resolve(async () => await tasks)
+            .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
+            .catch(reportError);
           if (req.session?.user) {
             req.session.user.pus_id = puskesmas.id;
           }
