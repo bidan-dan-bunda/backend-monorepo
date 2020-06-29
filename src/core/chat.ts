@@ -83,6 +83,13 @@ export function subscribeDevicesToTopic(tokens: string[], topic: string) {
     .catch(reportError);
 }
 
+export function unsubscribeDevicesToTopic(tokens: string[], topic: string) {
+  return messaging
+    .unsubscribeFromTopic(tokens, topic)
+    .then((res) => logFirebaseResponse(res, 'Unsubscribed devices from topic'))
+    .catch(reportError);
+}
+
 interface GroupChatData {
   senderId: number;
   senderName: string;
@@ -90,7 +97,13 @@ interface GroupChatData {
   message: string;
 }
 
-export function sendToGroup(topic: string, data: GroupChatData) {
+export async function sendToGroup(topic: string, data: GroupChatData) {
+  const senderTokens = (
+    await deviceTokenDb.load({
+      where: { user_id: data.senderId },
+    })
+  ).map((dt) => dt.token);
+  await unsubscribeDevicesToTopic(senderTokens, topic);
   return messaging
     .send({
       notification: {
@@ -107,7 +120,10 @@ export function sendToGroup(topic: string, data: GroupChatData) {
       },
       topic,
     })
-    .then((id) => log(`Message with ${id} sent`, ['fcm']))
+    .then((id) => {
+      log(`Message with ${id} sent`, ['fcm']);
+      subscribeDevicesToTopic(senderTokens, topic);
+    })
     .catch(reportError);
 }
 
