@@ -1,3 +1,4 @@
+import { User } from './user';
 import { PuskesmasToken } from './puskesmas-token';
 import { Province } from './reg-province';
 import { Model, DataTypes } from 'sequelize';
@@ -71,5 +72,11 @@ export const PuskesmasDefinition: ModelDefinition = {
     });
   },
 
-  runAfter(sequelize) {},
+  runAfter(sequelize) {
+    Puskesmas.hasMany(User, {
+      foreignKey: 'pus_id',
+      sourceKey: 'id',
+      as: 'bunda',
+    });
+  },
 };

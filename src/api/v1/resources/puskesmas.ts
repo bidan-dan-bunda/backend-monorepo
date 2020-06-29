@@ -55,6 +55,21 @@ export const showTokens: RouteDefinition = {
   },
 };
 
+export const showBunda: RouteDefinition = {
+  route: '/:id/bunda',
+  method: 'get',
+  async load(req, locals, res) {
+    const users = await userDb.load({
+      where: { pus_id: req.params.id },
+      attributes: { exclude: ['password'] },
+    });
+    if (users.length) {
+      return users;
+    }
+    return null;
+  },
+};
+
 export const create = commonRoutes.create(db, schema, undefined, {
   async create(req, locals, res) {
     const ret = await db.create(req.body);
