@@ -21,6 +21,7 @@ import {
 import { toArray } from '../../../utils';
 import { createTopic, storeTopicId } from '../../../core/chat';
 import { reportError } from '../../../error';
+import { countPages } from '../../common';
 
 const userDb = new Database<User>(UserDefinition);
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
@@ -58,11 +59,17 @@ export const showTokens: RouteDefinition = {
 export const showBunda: RouteDefinition = {
   route: '/:id/bunda',
   method: 'get',
-  async load(req, locals, res) {
-    const users = await userDb.load({
+  middleware(req, res, next) {
+    const queryOptions = {
+      ...res.locals.page,
       where: { pus_id: req.params.id, user_type: 'u' },
       attributes: { exclude: ['password'] },
-    });
+    };
+    res.locals.queryOptions = queryOptions;
+    return countPages(userDb, queryOptions)(req, res, next);
+  },
+  async load(req, locals, res) {
+    const users = await userDb.load(locals.queryOptions);
     if (users.length) {
       return users;
     }
