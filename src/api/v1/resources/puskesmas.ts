@@ -60,7 +60,7 @@ export const showBunda: RouteDefinition = {
   method: 'get',
   async load(req, locals, res) {
     const users = await userDb.load({
-      where: { pus_id: req.params.id },
+      where: { pus_id: req.params.id, user_type: 'u' },
       attributes: { exclude: ['password'] },
     });
     if (users.length) {
