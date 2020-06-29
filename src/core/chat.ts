@@ -12,6 +12,8 @@ import Database, { getSequelizeInstance } from '../orm/database';
 import { nanoid } from 'nanoid';
 import { Op } from 'sequelize';
 import { reportError } from '../error';
+import { logFirebaseResponse } from '../utils';
+import { log } from '../logger';
 
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 const chatDb = new Database<Chat>(ChatDefinition);
@@ -60,6 +62,7 @@ export async function sendMessageToTarget(chatData: ChatData) {
         },
         tokens: tokens as string[],
       })
+      .then(logFirebaseResponse)
       .catch(reportError);
   }
   return tokensExist;
@@ -74,7 +77,10 @@ export async function storeTopicId(pusId: number, topic: string) {
 }
 
 export function subscribeDevicesToTopic(tokens: string[], topic: string) {
-  return messaging.subscribeToTopic(tokens, topic).catch(reportError);
+  return messaging
+    .subscribeToTopic(tokens, topic)
+    .then((res) => logFirebaseResponse(res, 'Subscribed to devices'))
+    .catch(reportError);
 }
 
 interface GroupChatData {
@@ -101,6 +107,7 @@ export function sendToGroup(topic: string, data: GroupChatData) {
       },
       topic,
     })
+    .then((id) => log(`Message with ${id} sent`, ['fcm']))
     .catch(reportError);
 }
 
@@ -120,7 +127,7 @@ export async function sendNotSentMessagesToId(
     senderName: user.name,
   }));
   for (const message of messages) {
-    sendMessageToTarget(message).catch(reportError);
+    sendMessageToTarget(message);
   }
 }
 

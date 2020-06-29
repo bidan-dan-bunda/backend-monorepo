@@ -16,6 +16,7 @@ import { getConfig } from '../config';
 import { ModelHooks } from 'sequelize/types/lib/hooks';
 import { retryOperation } from '../utils';
 import { log } from '../logger';
+import { reportError } from '../error';
 
 let sequelize: Sequelize | null = null;
 
@@ -115,46 +116,66 @@ export default class Database<T extends Model> {
   }
 
   async load(options?: FindOptions) {
-    return await this.model.findAll(options);
+    try {
+      return await this.model.findAll(options);
+    } catch (err) {
+      reportError(err);
+      throw err;
+    }
   }
 
   async create(values?: object, options?: CreateOptions) {
-    return await retryOperation<T>(
-      () => this.model.create(values, options),
-      (err) => {
-        if (err instanceof ValidationError) {
-          return false;
+    try {
+      return await retryOperation<T>(
+        () => this.model.create(values, options),
+        (err) => {
+          if (err instanceof ValidationError) {
+            return false;
+          }
+          return true;
         }
-        return true;
-      }
-    );
+      );
+    } catch (err) {
+      reportError(err);
+      throw err;
+    }
   }
 
   async update(values: object, options: UpdateOptions) {
-    const ret = await retryOperation<[number, T[]]>(
-      () => this.model.update(values, options),
-      (err) => {
-        if (err instanceof ValidationError) {
-          return false;
+    try {
+      const ret = await retryOperation<[number, T[]]>(
+        () => this.model.update(values, options),
+        (err) => {
+          if (err instanceof ValidationError) {
+            return false;
+          }
+          return true;
         }
-        return true;
+      );
+      if (ret[0] == 0) {
+        return null;
       }
-    );
-    if (ret[0] == 0) {
-      return null;
+      return ret;
+    } catch (err) {
+      reportError(err);
+      throw err;
     }
-    return ret;
   }
 
   async destroy(options: DestroyOptions) {
-    return await retryOperation<number>(
-      () => this.model.destroy(options),
-      (err) => {
-        if (err instanceof ValidationError) {
+    try {
+      return await retryOperation<number>(
+        () => this.model.destroy(options),
+        (err) => {
+          if (err instanceof ValidationError) {
+            return false;
+          }
           return false;
         }
-        return false;
-      }
-    );
+      );
+    } catch (err) {
+      reportError(err);
+      throw err;
+    }
   }
 }

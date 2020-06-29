@@ -1,5 +1,7 @@
+import admin from 'firebase-admin';
 import isPromise from 'is-promise';
 import retry from 'retry';
+import { log } from './logger';
 
 export type GenericFunc = (...params: any[]) => Promise<any> | any;
 
@@ -42,4 +44,22 @@ export function retryOperation<T = any>(
       return;
     });
   });
+}
+
+export function logFirebaseResponse(
+  res:
+    | admin.messaging.BatchResponse
+    | admin.messaging.MessagingTopicManagementResponse,
+  action?: string
+) {
+  const details =
+    (res as admin.messaging.BatchResponse).responses ||
+    (res as admin.messaging.MessagingTopicManagementResponse).errors;
+
+  log(
+    `${action || 'Sent message'} with ${res.failureCount} failures, ${
+      res.successCount
+    } success. Details: ${JSON.stringify(details)}`,
+    ['fcm']
+  );
 }
