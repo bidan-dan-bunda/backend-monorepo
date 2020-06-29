@@ -13,6 +13,7 @@ import * as vaccineRouter from './resources/vaccine';
 import * as chatGroupRouter from './resources/chatgroup';
 import * as patientRouter from './resources/patient';
 import * as accountRouter from './resources/account';
+import * as jadwalRouter from './resources/jadwaldiskusi';
 
 import { createResourceRouter } from '../resource-route';
 import { paging } from '../middleware';
@@ -39,5 +40,6 @@ apiRouter.use('/puskesmas-tokens', createResourceRouter(puskesmasTokenRouter));
 apiRouter.use('/vaccines', createResourceRouter(vaccineRouter));
 apiRouter.use('/chatgroups', createResourceRouter(chatGroupRouter));
 apiRouter.use('/patients', createResourceRouter(patientRouter));
+apiRouter.use('/jadwaldiskusi', createResourceRouter(jadwalRouter));
 
 export default apiRouter;
