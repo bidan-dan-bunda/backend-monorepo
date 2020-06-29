@@ -110,8 +110,12 @@ export const register: RouteDefinition = {
         const puskesmas = await getPuskesmasByToken(req.body.puskesmas_token);
         if (puskesmas) {
           const ret = await signup(req.body as UserFields);
-          if (req.session?.user) {
-            req.session.user.pus_id = puskesmas.id;
+          if (req.session && !req.query.no_cookie) {
+            req.session.user = {
+              id: ret.id,
+              user_type: ret.user_type,
+              pus_id: puskesmas.id,
+            };
           }
 
           const tasks: any[] = [];
@@ -141,13 +145,6 @@ export const register: RouteDefinition = {
           Promise.all(tasks)
             .then(() => sendNotSentMessagesToId(ret.id, req.body.device_token))
             .catch(reportError);
-
-          if (req.session && !req.query.no_cookie) {
-            req.session.user = {
-              id: ret.id,
-              user_type: ret.user_type,
-            };
-          }
 
           return res.status(200).json({
             data: {
