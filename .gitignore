@@ -31,5 +31,5 @@ temp/
 coverage/
 devscripts/
 build/
-google-cloud-credentials.json
+google-application-credentials.json
 sqlbackups/
