@@ -50,7 +50,7 @@ export async function sendMessageToTarget(chatData: ChatData) {
     messaging
       .sendMulticast({
         notification: {
-          title: senderId.toString(),
+          title: senderName.toString(),
           body: message,
         },
         data: {
@@ -107,7 +107,7 @@ export async function sendToGroup(topic: string, data: GroupChatData) {
   return messaging
     .send({
       notification: {
-        title: data.senderId.toString(),
+        title: data.senderName.toString(),
         body: data.message,
       },
       data: {
