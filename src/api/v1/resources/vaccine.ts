@@ -37,6 +37,12 @@ export const index = commonRoutes.index(
 
 export const create = commonRoutes.create(db, schema, undefined, {
   middleware: isBidan,
+  create(req) {
+    return db.create({
+      ...req.body,
+      pus_id: req.session?.user.pus_id,
+    });
+  },
   async post(req) {
     const deviceTokens = (
       await deviceTokenDb.model.findAll({
@@ -68,4 +74,13 @@ export const edit = commonRoutes.edit(db, schema, undefined, {
 });
 export const destroy = commonRoutes.destroy(db, undefined, {
   middleware: isBidan,
+});
+
+const destLastPart = 'vaccine_images';
+export const upload = commonRoutes.upload({
+  db,
+  dbField: 'thumbnail_url',
+  destLastPart,
+  routePostFix: 'image',
+  fieldName: 'image',
 });
