@@ -129,7 +129,11 @@ export const get: RouteDefinition = {
       return countPages(chatGroupDb, queryOptions)(req, res, next);
     },
   ],
-  load(req, locals) {
-    return chatGroupDb.load(locals.queryOptions);
+  async load(req, locals) {
+    const chats = await chatGroupDb.load(locals.queryOptions);
+    if (chats.length) {
+      return chats;
+    }
+    return null;
   },
 };

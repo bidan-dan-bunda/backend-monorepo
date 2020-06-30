@@ -121,7 +121,11 @@ export const chatsByTargetId: RouteDefinition = {
     },
   ],
   async load(req, locals) {
-    return db.load(locals.queryOptions);
+    const chats = await db.load(locals.queryOptions);
+    if (chats.length) {
+      return chats;
+    }
+    return null;
   },
 };
 
