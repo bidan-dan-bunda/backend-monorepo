@@ -49,9 +49,10 @@ export function getSequelizeInstance({
         acquire: 30000,
         idle: 1000,
       },
+      benchmark: true,
       logging:
         getConfig('LOG_SQL') == 1
-          ? (msg) => log(msg, ['sequelize-query'])
+          ? (msg, timing) => log({ query: msg, timing }, ['sequelize-query'])
           : false,
       timezone: '+07:00',
     });

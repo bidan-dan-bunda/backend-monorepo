@@ -16,6 +16,8 @@ import { authenticateV1 } from './auth/middleware';
 
 import * as Sentry from '@sentry/node';
 import { getConfig } from './config';
+import responseTime from 'response-time';
+import { log } from './logger';
 
 if (getConfig('USE_SENTRY') == 1 || IS_HEROKU) {
   Sentry.init({
@@ -26,6 +28,20 @@ if (getConfig('USE_SENTRY') == 1 || IS_HEROKU) {
 // @ts-ignore
 
 const app = express();
+
+app.use(
+  responseTime((req, res, time) => {
+    log(
+      {
+        url: req.url,
+        method: req.method,
+        responseStatus: res.statusCode,
+        time,
+      },
+      ['response-time']
+    );
+  })
+);
 
 /* == TODOS == */
 // -> Better REST API routes handling
