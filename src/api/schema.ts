@@ -72,7 +72,6 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   patient: Joi.object({
     user_id: Joi.number().required(),
     patient_note: Joi.string().optional(),
-    medical_record_id: Joi.string().required(),
   }),
 
   jadwaldiskusi: Joi.object({

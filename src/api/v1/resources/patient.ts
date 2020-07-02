@@ -7,6 +7,7 @@ import Database from '../../../orm/database';
 import { RouteDefinition } from '../../resource-route';
 import { toArray } from 'lodash';
 import { authorize, isUserType } from '../../../auth/middleware';
+import { generateMedicalRecordId } from '../../../core/medical-record-id';
 
 const db = new Database<Patient>(PatientDefinition);
 const schema = BaseObjectSchema.patient;
@@ -50,6 +51,12 @@ export const show = commonRoutes.show(db, (req) => ({
 
 export const create = commonRoutes.create(db, schema, undefined, {
   middleware: isBidan,
+  create(req) {
+    return db.create({
+      ...req.body,
+      medical_record_id: generateMedicalRecordId(),
+    });
+  },
 });
 
 export const edit = commonRoutes.edit(
