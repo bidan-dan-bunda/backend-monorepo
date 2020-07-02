@@ -14,6 +14,7 @@ import * as chatGroupRouter from './resources/chatgroup';
 import * as patientRouter from './resources/patient';
 import * as accountRouter from './resources/account';
 import * as jadwalRouter from './resources/jadwaldiskusi';
+import * as notificationRouter from './resources/notify';
 
 import { createResourceRouter } from '../resource-route';
 import { paging } from '../middleware';
@@ -41,5 +42,6 @@ apiRouter.use('/vaccines', createResourceRouter(vaccineRouter));
 apiRouter.use('/chatgroups', createResourceRouter(chatGroupRouter));
 apiRouter.use('/patients', createResourceRouter(patientRouter));
 apiRouter.use('/jadwaldiskusi', createResourceRouter(jadwalRouter));
+apiRouter.use('/notifications', createResourceRouter(notificationRouter));
 
 export default apiRouter;
