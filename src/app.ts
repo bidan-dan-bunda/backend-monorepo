@@ -33,7 +33,8 @@ app.use(
   responseTime((req, res, time) => {
     log(
       {
-        url: req.url,
+        // @ts-ignore
+        url: req.originalUrl,
         method: req.method,
         responseStatus: res.statusCode,
         time,
