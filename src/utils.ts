@@ -46,20 +46,16 @@ export function retryOperation<T = any>(
   });
 }
 
-export function logFirebaseResponse(
-  res:
-    | admin.messaging.BatchResponse
-    | admin.messaging.MessagingTopicManagementResponse,
-  action?: string
-) {
-  const details =
-    (res as admin.messaging.BatchResponse).responses ||
-    (res as admin.messaging.MessagingTopicManagementResponse).errors;
+export function logFirebaseResponse(res: any, action = 'send-message') {
+  const details = res.responses || res.errors || res;
 
   log(
-    `${action || 'Sent message'} with ${res.failureCount} failures, ${
-      res.successCount
-    } success. Details: ${JSON.stringify(details)}`,
+    {
+      action,
+      failureCount: res.failureCount,
+      successCount: res.successCount,
+      details,
+    },
     ['fcm']
   );
 }

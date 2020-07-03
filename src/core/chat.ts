@@ -79,14 +79,14 @@ export async function storeTopicId(pusId: number, topic: string) {
 export function subscribeDevicesToTopic(tokens: string[], topic: string) {
   return messaging
     .subscribeToTopic(tokens, topic)
-    .then((res) => logFirebaseResponse(res, 'Subscribed to devices'))
+    .then((res) => logFirebaseResponse(res, 'device-subscribe'))
     .catch(reportError);
 }
 
 export function unsubscribeDevicesToTopic(tokens: string[], topic: string) {
   return messaging
     .unsubscribeFromTopic(tokens, topic)
-    .then((res) => logFirebaseResponse(res, 'Unsubscribed devices from topic'))
+    .then((res) => logFirebaseResponse(res, 'device-unsubscribe'))
     .catch(reportError);
 }
 
@@ -121,7 +121,7 @@ export async function sendToGroup(topic: string, data: GroupChatData) {
       topic,
     })
     .then((id) => {
-      log(`Message with ${id} sent`, ['fcm']);
+      logFirebaseResponse({ action: 'message-id-created', details: { id } });
       subscribeDevicesToTopic(senderTokens, topic);
     })
     .catch(reportError);
