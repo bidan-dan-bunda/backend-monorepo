@@ -38,6 +38,8 @@ export function index(
   additionalProps?: RouteDefinition | OptionFn<RouteDefinition, RouteDefinition>
 ): RouteDefinition {
   let props: RouteDefinition = {
+    route: '/',
+    method: 'get',
     middleware: (req, res, next) => {
       const optionsDb = getDbOptions<FindOptions>(req, dbOptions);
       res.locals.dbOptions = optionsDb;
