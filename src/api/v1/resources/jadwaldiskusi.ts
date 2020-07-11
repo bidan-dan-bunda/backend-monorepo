@@ -19,6 +19,7 @@ import {
 import { notify } from '../../../core/services/notifier';
 import moment from 'moment';
 import { CronTime } from 'cron';
+import { toArray } from '../../../utils';
 
 const db = new Database<JadwalDiskusi>(JadwalDiskusiDefinition);
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
@@ -48,8 +49,9 @@ export const index = commonRoutes.index(
       bid_id: req.session?.user.id,
     },
   }),
-  {
-    middleware: isBidan,
+  function (props) {
+    const middleware = toArray(props.middleware);
+    return { middleware: [...middleware, isBidan] };
   }
 );
 
