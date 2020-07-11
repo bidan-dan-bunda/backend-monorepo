@@ -77,6 +77,7 @@ export const BaseObjectSchema: { [id: string]: Joi.ObjectSchema } = {
   jadwaldiskusi: Joi.object({
     title: Joi.string().required(),
     timestamp: Joi.number().required(),
+    timestamp_end: Joi.number().optional(),
     reminder_timestamp: Joi.number().optional(),
   }),
 };

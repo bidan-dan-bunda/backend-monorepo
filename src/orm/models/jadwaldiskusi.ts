@@ -7,6 +7,7 @@ export class JadwalDiskusi extends Model {
   bid_id!: number;
   title!: string;
   timestamp!: number;
+  timestamp_end?: number;
   reminder_timestamp?: number;
   job_id!: string;
   reminder_job_id?: string;
@@ -30,6 +31,7 @@ export const JadwalDiskusiDefinition: ModelDefinition = {
       allowNull: false,
     },
     timestamp: DataTypes.BIGINT,
+    timestamp_end: DataTypes.BIGINT,
     reminder_timestamp: DataTypes.BIGINT,
     job_id: DataTypes.STRING,
     reminder_job_id: DataTypes.STRING,
