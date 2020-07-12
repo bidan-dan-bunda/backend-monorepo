@@ -103,7 +103,9 @@ export const edit = commonRoutes.edit(db, schema, undefined, {
       const deviceTokens = await getDeviceTokens(req.session?.user.pus_id);
       if (req.body.timestamp) {
         let job = getRunningJob(jd.job_id);
-        job.stop();
+        if (job) {
+          job.stop();
+        }
         const date = new Date(req.body.timestamp);
         let jobId = '';
         ({ job, jobId } = schedule(date, () => {
@@ -125,7 +127,9 @@ export const edit = commonRoutes.edit(db, schema, undefined, {
             .locale('id')
             .humanize();
           let job = getRunningJob(jd.reminder_job_id);
-          job.stop();
+          if (job) {
+            job.stop();
+          }
           let jobId = '';
           ({ job, jobId } = schedule(date, () =>
             notify(deviceTokens, {
@@ -153,12 +157,16 @@ export const destroy = commonRoutes.destroy(db, undefined, {
     });
     if (schedule && schedule.job_id) {
       const job = getRunningJob(schedule.job_id);
-      job.stop();
+      if (job) {
+        job.stop();
+      }
       deleteRunningJob(schedule.job_id);
 
       if (schedule?.reminder_job_id) {
         const job = getRunningJob(schedule.reminder_job_id);
-        job.stop();
+        if (job) {
+          job.stop();
+        }
         deleteRunningJob(schedule.reminder_job_id);
       }
 

@@ -19,5 +19,7 @@ export function getRunningJob(key: string) {
 }
 
 export function deleteRunningJob(key: string) {
-  delete crons[key];
+  if (crons[key]) {
+    delete crons[key];
+  }
 }
