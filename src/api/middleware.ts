@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import ms from 'ms';
 
 export interface ResourcePage {
   offset: number;
@@ -19,6 +20,11 @@ export function paging(req: Request, res: Response, next: NextFunction) {
   data.offset = page * pageSize - (pageSize - 1) - 1;
   data.limit = pageSize;
   (res as any).locals.page = data;
+  return next();
+}
+
+export function cache(req: Request, res: Response, next: NextFunction) {
+  res.setHeader('Cache-Control', `public, max-age=${ms('1y')}`);
   return next();
 }
 

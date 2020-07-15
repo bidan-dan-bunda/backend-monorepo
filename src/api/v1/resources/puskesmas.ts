@@ -22,6 +22,7 @@ import { toArray } from '../../../utils';
 import { createTopic, storeTopicId } from '../../../core/chat';
 import { reportError } from '../../../error';
 import { countPages } from '../../common';
+import { cache } from '../../middleware';
 
 const userDb = new Database<User>(UserDefinition);
 const db = new Database<Puskesmas>(PuskesmasDefinition, undefined);
@@ -36,6 +37,7 @@ export const show = commonRoutes.show(db);
 
 export const index: RouteDefinition = commonRoutes.show(tokenDb, undefined, {
   route: '/tokens/:token',
+  middleware: cache,
   load(req) {
     return tokenDb.model.findAll({
       where: { token: req.params.token as any },
@@ -46,7 +48,7 @@ export const index: RouteDefinition = commonRoutes.show(tokenDb, undefined, {
 
 export const showTokens: RouteDefinition = {
   route: '/:id/tokens',
-  middleware: isAdmin,
+  middleware: [isAdmin, cache],
   method: 'get',
   load(req, locals, res) {
     return tokenDb.load({
