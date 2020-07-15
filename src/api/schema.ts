@@ -100,6 +100,10 @@ export const UserLoginSchema = Joi.object({
   device_token: Joi.string().required(),
 });
 
+export const NotificationStatusRequest = Joi.object({
+  is_read: Joi.boolean().optional(),
+});
+
 // array, error, single, no data
 export interface ApiResponse {
   pages?: number;

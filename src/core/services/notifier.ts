@@ -2,11 +2,48 @@ import { messaging } from './../firebase/admin';
 import admin from 'firebase-admin';
 import { logFirebaseResponse } from '../../utils';
 import { reportError } from '../../error';
+import Database from '../../orm/database';
+import {
+  Notification,
+  NotificationDefinition,
+} from '../../orm/models/notification';
+import {
+  DeviceToken,
+  DeviceTokenDefinition,
+} from '../../orm/models/devicetokens';
+
+export interface NotifyOptions {
+  save: boolean;
+  userIds: number[];
+  activityType?: string;
+  message?: string;
+  objectType?: string;
+  objectUrl?: string;
+}
+
+const notificationDb = new Database<Notification>(NotificationDefinition);
+
+export function storeNotifications(userIds: string[], ...params: any) {
+  return notificationDb.create();
+}
 
 export function notify(
   deviceTokens: string[],
-  payload: admin.messaging.NotificationMessagePayload
+  payload: admin.messaging.NotificationMessagePayload,
+  options?: NotifyOptions
 ) {
+  if (options?.save) {
+    const notifications = options.userIds.map((userId) => ({
+      receipt_id: userId,
+      activity_type: options.activityType,
+      timestamp: Date.now(),
+      object_type: options.objectType,
+      message: options.message || payload.title,
+      object_url: options.objectUrl,
+    }));
+    notificationDb.model.bulkCreate(notifications);
+  }
+
   return messaging
     .sendMulticast({ notification: payload, tokens: deviceTokens })
     .then(logFirebaseResponse)

@@ -18,7 +18,6 @@ import {
 } from '../../../core/services/scheduler';
 import { notify } from '../../../core/services/notifier';
 import moment from 'moment';
-import { CronTime } from 'cron';
 import { toArray } from '../../../utils';
 
 const db = new Database<JadwalDiskusi>(JadwalDiskusiDefinition);
@@ -29,7 +28,7 @@ const isBidan = authorize(isUserType('b'));
 async function getDeviceTokens(pusId: number) {
   return (
     await deviceTokenDb.model.findAll({
-      attributes: ['token'],
+      attributes: ['token', 'user_id'],
       include: [
         {
           model: User,
@@ -39,7 +38,7 @@ async function getDeviceTokens(pusId: number) {
         },
       ],
     })
-  ).map((dt) => dt.token);
+  ).map((dt) => ({ token: dt.token, user_id: dt.user_id }));
 }
 
 export const index = commonRoutes.index(
@@ -64,10 +63,19 @@ export const create = commonRoutes.create(db, schema, undefined, {
     const title = req.body.title;
     const eventDate = new Date(req.body.timestamp);
     const { jobId: eventScheduleJobId } = schedule(eventDate, () => {
-      notify(deviceTokens, {
-        title: `Diskusi untuk ${title} dimulai`,
-        // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
-      });
+      notify(
+        deviceTokens.map((dt) => dt.token),
+        {
+          title: `Diskusi untuk ${title} dimulai`,
+          // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
+        },
+        {
+          save: true,
+          userIds: deviceTokens.map((dt) => dt.user_id),
+          activityType: 'diskusi',
+          objectType: 'jadwaldiskusi',
+        }
+      );
     });
     let reminder_job_id = '';
     if (req.body.reminder_timestamp) {
@@ -75,10 +83,19 @@ export const create = commonRoutes.create(db, schema, undefined, {
       const reminderDate = new Date(req.body.reminder_timestamp);
       const durationHumanized = moment.duration(diff).locale('id').humanize();
       const { jobId, job } = schedule(reminderDate, () => {
-        notify(deviceTokens, {
-          title: `Diskusi untuk ${title} dimulai ${durationHumanized} lagi`,
-          // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
-        });
+        notify(
+          deviceTokens.map((dt) => dt.token),
+          {
+            title: `Diskusi untuk ${title} dimulai ${durationHumanized} lagi`,
+            // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
+          },
+          {
+            save: true,
+            userIds: deviceTokens.map((dt) => dt.user_id),
+            activityType: 'diskusi',
+            objectType: 'jadwaldiskusi',
+          }
+        );
       });
       reminder_job_id = jobId;
     }
@@ -109,10 +126,19 @@ export const edit = commonRoutes.edit(db, schema, undefined, {
         const date = new Date(req.body.timestamp);
         let jobId = '';
         ({ job, jobId } = schedule(date, () => {
-          notify(deviceTokens, {
-            title: `Diskusi untuk ${jd.title} dimulai`,
-            // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
-          });
+          notify(
+            deviceTokens.map((dt) => dt.token),
+            {
+              title: `Diskusi untuk ${jd.title} dimulai`,
+              // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
+            },
+            {
+              save: true,
+              userIds: deviceTokens.map((dt) => dt.user_id),
+              activityType: 'diskusi',
+              objectType: 'jadwaldiskusi',
+            }
+          );
         }));
         job_id = jobId;
       }
@@ -132,10 +158,19 @@ export const edit = commonRoutes.edit(db, schema, undefined, {
           }
           let jobId = '';
           ({ job, jobId } = schedule(date, () =>
-            notify(deviceTokens, {
-              title: `Diskusi untuk ${jd.title} dimulai ${durationHumanized} lagi`,
-              // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
-            })
+            notify(
+              deviceTokens.map((dt) => dt.token),
+              {
+                title: `Diskusi untuk ${jd.title} dimulai ${durationHumanized} lagi`,
+                // body: 'Jangan lupa untuk mengisi diskusinya ya, Bu',
+              },
+              {
+                save: true,
+                userIds: deviceTokens.map((dt) => dt.user_id),
+                activityType: 'diskusi',
+                objectType: 'jadwaldiskusi',
+              }
+            )
           ));
           reminder_job_id = jobId;
         } else {

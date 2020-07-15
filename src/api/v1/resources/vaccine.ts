@@ -43,31 +43,44 @@ export const create = commonRoutes.create(db, schema, undefined, {
       pus_id: req.session?.user.pus_id,
     });
   },
-  async post(req) {
-    const deviceTokens = (
-      await deviceTokenDb.model.findAll({
-        attributes: ['token'],
-        where: {
-          [Op.not]: {
-            user_id: req.session?.user.id,
+  async post(req, error, ret) {
+    if (!error) {
+      const deviceTokens = (
+        await deviceTokenDb.model.findAll({
+          attributes: ['token', 'user_id'],
+          where: {
+            [Op.not]: {
+              user_id: req.session?.user.id,
+            },
           },
+          include: [
+            {
+              model: User,
+              where: { pus_id: req.session?.user.pus_id },
+              attributes: ['pus_id'],
+              as: 'user',
+            },
+          ],
+        })
+      ).map((dt) => ({ token: dt.token, user_id: dt.user_id }));
+      notify(
+        deviceTokens.map((dt) => dt.token),
+        {
+          title: `Vaksin ${req.body.name} tersedia`,
+          body: req.body.description,
         },
-        include: [
-          {
-            model: User,
-            where: { pus_id: req.session?.user.pus_id },
-            attributes: ['pus_id'],
-            as: 'user',
-          },
-        ],
-      })
-    ).map((dt) => dt.token);
-    notify(deviceTokens, {
-      title: `Vaksin ${req.body.name} tersedia`,
-      body: req.body.description,
-    });
+        {
+          save: true,
+          userIds: deviceTokens.map((dt) => dt.user_id),
+          activityType: 'vaccine',
+          objectType: 'vaccine',
+          objectUrl: '/api/v1/vaccines/' + ret.id,
+        }
+      );
+    }
   },
 });
+
 export const show = commonRoutes.show(db, undefined, { middleware: isBidan });
 export const edit = commonRoutes.edit(db, schema, undefined, {
   middleware: isBidan,

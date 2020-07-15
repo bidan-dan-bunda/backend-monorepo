@@ -8,6 +8,7 @@ import { RouteDefinition } from '../../resource-route';
 import { toArray } from '../../../utils';
 import { authorize, isUserType } from '../../../auth/middleware';
 import { generateMedicalRecordId } from '../../../core/medical-record-id';
+import sequelize from 'sequelize';
 
 const db = new Database<Patient>(PatientDefinition);
 const userDb = new Database<User>(UserDefinition);
@@ -22,7 +23,7 @@ export const index = commonRoutes.index(
     include: [
       {
         model: User,
-        where: { pus_id: req.session?.user.pus_id },
+        where: { pus_id: req.session?.user.pus_id, user_type: 'u' },
         attributes: ['name', 'profile_image'],
       },
     ],
@@ -47,7 +48,6 @@ export const showPatientsWithEmptyNote = commonRoutes.index(
         where: { pus_id: req.session?.user.pus_id },
         attributes: ['name', 'profile_image', 'id'],
         required: false,
-        right: true,
       },
     ],
   }),

@@ -5,7 +5,7 @@ import { ModelDefinition } from '../database';
 export class DeviceToken extends Model {
   id!: number;
   token!: string;
-  user_id?: number;
+  user_id!: number;
 }
 
 export const DeviceTokenDefinition: ModelDefinition = {

@@ -14,7 +14,8 @@ import * as chatGroupRouter from './resources/chatgroup';
 import * as patientRouter from './resources/patient';
 import * as accountRouter from './resources/account';
 import * as jadwalRouter from './resources/jadwaldiskusi';
-import * as notificationRouter from './resources/notify';
+import * as notifyRouter from './resources/notify';
+import * as notificationRouter from './resources/notification';
 
 import { createResourceRouter } from '../resource-route';
 import { paging } from '../middleware';
@@ -29,7 +30,6 @@ apiRouter.use('/auth', createResourceRouter(authRouter));
 
 // resources api
 apiRouter.use(paging);
-apiRouter.use('/locations', createResourceRouter(locationRouter));
 apiRouter.use('/users', createResourceRouter(userRouter));
 apiRouter.use('/account', createResourceRouter(accountRouter));
 apiRouter.use('/puskesmas', createResourceRouter(puskesmasRouter));
@@ -42,6 +42,8 @@ apiRouter.use('/vaccines', createResourceRouter(vaccineRouter));
 apiRouter.use('/chatgroups', createResourceRouter(chatGroupRouter));
 apiRouter.use('/patients', createResourceRouter(patientRouter));
 apiRouter.use('/jadwaldiskusi', createResourceRouter(jadwalRouter));
+apiRouter.use('/notify', createResourceRouter(notifyRouter));
 apiRouter.use('/notifications', createResourceRouter(notificationRouter));
+apiRouter.use('/locations', createResourceRouter(locationRouter));
 
 export default apiRouter;
