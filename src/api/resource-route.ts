@@ -38,7 +38,7 @@ export interface UploadCallback {
 }
 
 export interface PostHandler {
-  (req: Request, error: any): Promise<any> | any;
+  (req: Request, error: any, handlerRet: any): Promise<any> | any;
 }
 
 export interface UploadDescription {
@@ -146,21 +146,20 @@ function createHandler(
       return res.json({ message: messageOnSuccess });
     }
 
+    let ret: any;
     let error = null;
     try {
-      const ret = h(req, res.locals, req.params, ...params) as
-        | Promise<any>
-        | any;
+      ret = h(req, res.locals, req.params, ...params) as Promise<any> | any;
       if (isPromise(ret)) {
-        const val = (await ret) as any;
-        if (!val && validate) {
+        ret = (await ret) as any;
+        if (!ret && validate) {
           return next();
         }
 
-        if (!val && (retrieveData || editData || destroyData)) {
+        if (!ret && (retrieveData || editData || destroyData)) {
           return next(createError(statusCodeOnNoData));
         }
-        return end(statusCodeOnSuccess, val);
+        return end(statusCodeOnSuccess, ret);
       }
       if (!ret && validate) {
         return next();
@@ -176,7 +175,7 @@ function createHandler(
         createError(statusCodeOnException, err.message || messageOnException)
       );
     } finally {
-      postHandler && postHandler(req, error);
+      postHandler && postHandler(req, error, ret);
     }
   };
 }
