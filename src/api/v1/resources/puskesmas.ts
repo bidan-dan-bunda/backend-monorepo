@@ -99,7 +99,14 @@ export const bidans: RouteDefinition = {
   load(req) {
     return userDb.load({
       where: { user_type: 'b', pus_id: req.params.id },
-      attributes: ['id', 'name', 'telephone', 'profile_image', 'pus_id'],
+      attributes: [
+        'id',
+        'name',
+        'telephone',
+        'profile_image',
+        'pus_id',
+        'username',
+      ],
     });
   },
 };
