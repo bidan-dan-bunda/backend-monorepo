@@ -14,6 +14,7 @@ const db = new Database<Notification>(NotificationDefinition);
 
 export const index = commonRoutes.index(db, (req) => ({
   where: { receipt_id: req.session?.user.id },
+  order: [['timestamp', 'DESC']],
 }));
 
 export const status: RouteDefinition = {
