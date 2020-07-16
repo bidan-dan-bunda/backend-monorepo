@@ -10,6 +10,9 @@ export const me: RouteDefinition = {
   method: 'get',
   middleware: validRoute(isUser()),
   load(req) {
-    return db.model.findOne({ where: { id: req.session?.user.id } });
+    return db.model.findOne({
+      where: { id: req.session?.user.id },
+      attributes: { exclude: ['password'] },
+    });
   },
 };
