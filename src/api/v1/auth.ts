@@ -21,6 +21,7 @@ import {
   DeviceTokenDefinition,
 } from '../../orm/models/devicetokens';
 import { reportError } from '../../error';
+import { greetingNotification } from '../../core/services/notifier';
 
 const deviceTokenDb = new Database<DeviceToken>(DeviceTokenDefinition);
 const puskesmasDb = new Database<Puskesmas>(PuskesmasDefinition);
@@ -120,6 +121,7 @@ export const register: RouteDefinition = {
 
           const tasks: any[] = [];
           tasks.push(setUserAddressToPuskesmasAddress(puskesmas, ret as User));
+          tasks.push(greetingNotification(ret.id, req.body.device_token));
           if (req.body.device_token) {
             tasks.push(
               setUserDeviceToSubscribePuskesmasChatTopic(

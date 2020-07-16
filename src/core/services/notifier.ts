@@ -52,3 +52,27 @@ export function notify(
     .then(logFirebaseResponse)
     .catch(reportError);
 }
+
+export function greetingNotification(userId: number, deviceToken?: string) {
+  if (deviceToken) {
+    return notify(
+      [deviceToken],
+      {
+        title: 'Selamat datang di aplikasi Bidan dan Bunda',
+      },
+      {
+        save: true,
+        activityType: 'welcome',
+        objectType: 'welcome',
+        userIds: [userId],
+      }
+    );
+  }
+  return notificationDb.create({
+    receipt_id: userId,
+    activity_type: 'welcome',
+    timestamp: Date.now(),
+    object_type: 'welcome',
+    title: 'Selamat datang di aplikasi Bidan dan Bunda',
+  });
+}
