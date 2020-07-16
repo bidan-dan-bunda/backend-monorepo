@@ -41,11 +41,11 @@ export const showPatientsWithEmptyNote = commonRoutes.index(
   db,
   (req) => ({
     raw: true,
-    where: { patient_note: null },
+    // where: { patient_note: null },
     include: [
       {
         model: User,
-        where: { pus_id: req.session?.user.pus_id },
+        // where: { pus_id: req.session?.user.pus_id },
         attributes: ['name', 'profile_image', 'id'],
         required: false,
       },

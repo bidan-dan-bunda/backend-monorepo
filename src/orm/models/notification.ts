@@ -8,6 +8,8 @@ export class Notification extends Model {
   receipt_id!: string;
   activity_type?: number;
   object_type?: string;
+  title!: string;
+  body?: string;
   object_url?: string;
   is_read!: boolean;
   timestamp!: bigint;
@@ -29,6 +31,8 @@ export const NotificationDefinition: ModelDefinition = {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    title: DataTypes.STRING,
+    body: DataTypes.STRING,
     activity_type: DataTypes.STRING,
     object_type: DataTypes.STRING,
     object_url: DataTypes.STRING,

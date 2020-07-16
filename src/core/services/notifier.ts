@@ -16,7 +16,8 @@ export interface NotifyOptions {
   save: boolean;
   userIds: number[];
   activityType?: string;
-  message?: string;
+  title?: string;
+  body?: string;
   objectType?: string;
   objectUrl?: string;
 }
@@ -33,12 +34,14 @@ export function notify(
   options?: NotifyOptions
 ) {
   if (options?.save) {
-    const notifications = options.userIds.map((userId) => ({
+    const userIds = new Set(options.userIds);
+    const notifications = Array.from(userIds).map((userId) => ({
       receipt_id: userId,
       activity_type: options.activityType,
       timestamp: Date.now(),
       object_type: options.objectType,
-      message: options.message || payload.title,
+      title: options.title || payload.title,
+      body: options.body || payload.body,
       object_url: options.objectUrl,
     }));
     notificationDb.model.bulkCreate(notifications);
